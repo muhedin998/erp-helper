@@ -1,0 +1,27 @@
+.app-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--ion-color-medium);
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.95rem;
+}
+
+.new-list-btn {
+  margin-top: 20px;
+}
+
+ion-col[class*="ion-text-center"] {
+  cursor: pointer;
+}
+
+ion-col[class*="ion-text-center"] p {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}

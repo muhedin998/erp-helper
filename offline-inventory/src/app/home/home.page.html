@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>ERP Helper</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/settings">
+        <ion-icon slot="icon-only" name="settings"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ion-padding">
+    <h1 class="app-title">Offline Inventory</h1>
+    <p class="subtitle">Dopuna polica &amp; Nabavka</p>
+
+    <!-- New list CTA -->
+    <ion-button expand="block" (click)="createNewList()" size="large" color="primary" class="new-list-btn">
+      <ion-icon slot="start" name="add-circle"></ion-icon>
+      Nova lista
+    </ion-button>
+  </div>
+
+  <!-- Quick actions -->
+  <ion-card>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="4" class="ion-text-center" routerLink="/catalog">
+            <ion-icon name="folder" size="large" color="primary"></ion-icon>
+            <p>Katalog</p>
+          </ion-col>
+          <ion-col size="4" class="ion-text-center" routerLink="/shopping-list">
+            <ion-icon name="list" size="large" color="primary"></ion-icon>
+            <p>Liste</p>
+          </ion-col>
+          <ion-col size="4" class="ion-text-center" routerLink="/history">
+            <ion-icon name="time" size="large" color="primary"></ion-icon>
+            <p>Istorija</p>
+          </ion-col>
+        </ion-row>
+        <ion-row class="ion-padding-top">
+          <ion-col size="4" class="ion-text-center" routerLink="/import">
+            <ion-icon name="cloud-upload" size="large" color="secondary"></ion-icon>
+            <p>Import</p>
+          </ion-col>
+          <ion-col size="4" class="ion-text-center" (click)="createNewList()">
+            <ion-icon name="scan" size="large" color="success"></ion-icon>
+            <p>Skeniraj</p>
+          </ion-col>
+          <ion-col size="4" class="ion-text-center" routerLink="/settings">
+            <ion-icon name="settings" size="large" color="medium"></ion-icon>
+            <p>Podešavanja</p>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Recent lists -->
+  <ion-card *ngIf="recentLists.length > 0">
+    <ion-card-header>
+      <ion-card-title>Nedavne liste</ion-card-title>
+    </ion-card-header>
+    <ion-list>
+      <ion-item *ngFor="let list of recentLists" detail
+        [routerLink]="list.status === 'DRAFT' || list.status === 'READY_FOR_PURCHASE' ? ['/shopping-list-detail', list.id] : ['/list-detail', list.id]">
+        <ion-label>
+          <h3>{{ list.naziv }}</h3>
+          <p>{{ list.createdAt | date:'dd.MM.yyyy. HH:mm' }}</p>
+        </ion-label>
+        <ion-badge slot="end" [color]="list.status === 'DRAFT' ? 'warning' : list.status === 'PURCHASED' ? 'success' : 'primary'">
+          {{ list.status === 'DRAFT' ? 'Skica' : list.status === 'PURCHASED' ? 'Kupljena' : 'Spremna' }}
+        </ion-badge>
+      </ion-item>
+    </ion-list>
+  </ion-card>
+</ion-content>

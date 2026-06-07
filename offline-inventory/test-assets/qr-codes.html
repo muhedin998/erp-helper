@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code Test Cartice</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f0f0; }
+    .page { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; justify-content: center; }
+    .card {
+      background: white; border: 2px solid #ccc; border-radius: 6px;
+      width: 160px; padding: 8px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .card h3 { font-size: 11px; margin: 0; }
+    .card .sifra { font-size: 10px; color: #666; }
+    .card .barcode-text { font-size: 9px; color: #999; margin: 2px 0; }
+    .qrcode-wrapper { width: 120px; height: 120px; }
+    .qrcode-wrapper canvas, .qrcode-wrapper img { width: 120px !important; height: 120px !important; }
+    .btn-bar { 
+      text-align: center; padding: 15px; 
+    }
+    .btn-bar button { 
+      padding: 10px 25px; font-size: 14px; background: #4CAF50; color: white; 
+      border: none; border-radius: 4px; cursor: pointer; margin: 0 5px;
+    }
+    .btn-bar button:hover { background: #45a049; }
+    @media print {
+      body { background: white; }
+      .card { border: 1px solid #000; break-inside: avoid; }
+      .btn-bar { display: none; }
+      .page { gap: 5px; padding: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="btn-bar">
+    <button onclick="window.print()">Štampaj sve kartice</button>
+    <button onclick="document.querySelectorAll('.qrcode-wrapper').forEach(el => el.innerHTML = ''); generateAll();">Regeneriši QR kodove</button>
+  </div>
+  <div class="page" id="container"></div>
+
+  <script>
+    const products = [
+      { sifra:'1001', barcode:'8606101000019', naziv:'Coca Cola 0.5l' },
+      { sifra:'1002', barcode:'8606101000026', naziv:'Smoki 100g' },
+      { sifra:'1003', barcode:'8606101000033', naziv:'Mleko 1l' },
+      { sifra:'1004', barcode:'8606101000040', naziv:'Hleb beli 500g' },
+      { sifra:'1005', barcode:'8606101000057', naziv:'Jogurt 1.5l' },
+      { sifra:'1006', barcode:'8606101000064', naziv:'Kafa Grand 200g' },
+      { sifra:'1007', barcode:'8606101000071', naziv:'Čips Chipsy 150g' },
+      { sifra:'1008', barcode:'8606101000088', naziv:'Kečap 500ml' },
+      { sifra:'1009', barcode:'8606101000095', naziv:'Voda Rosa 1.5l' },
+      { sifra:'1010', barcode:'8606101000101', naziv:'Plazma keks 300g' },
+    ];
+
+    function generateAll() {
+      const container = document.getElementById('container');
+      container.innerHTML = '';
+
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3>${p.naziv}</h3>
+          <div class="sifra">Šifra: ${p.sifra}</div>
+          <div class="barcode-text">Barkod: ${p.barcode}</div>
+          <div class="qrcode-wrapper"></div>
+        `;
+        container.appendChild(card);
+
+        const qrTarget = card.querySelector('.qrcode-wrapper');
+        new QRCode(qrTarget, {
+          text: p.barcode,
+          width: 120,
+          height: 120,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+        });
+      });
+    }
+
+    generateAll();
+  </script>
+</body>
+</html>

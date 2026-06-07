@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ store.activeList()?.naziv || 'Lista' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportPDF()">
+        <ion-icon slot="icon-only" name="print"></ion-icon>
+      </ion-button>
+      <ion-button (click)="exportCSV()">
+        <ion-icon slot="icon-only" name="download"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card color="light" class="ion-no-margin">
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-label>
+          <p>Status</p>
+          <ion-badge [color]="store.activeList()?.status === 'PURCHASED' ? 'success' : 'primary'">
+            {{ store.activeList()?.status === 'PURCHASED' ? 'Kupljena' : 'Spremna' }}
+          </ion-badge>
+        </ion-label>
+        <ion-label slot="end" class="ion-text-end">
+          <p>Artikala</p>
+          <strong>{{ store.itemCount() }}</strong>
+        </ion-label>
+      </ion-item>
+      <p *ngIf="store.activeList()?.note"><em>{{ store.activeList()?.note }}</em></p>
+      <p class="ion-no-margin ion-padding-top" *ngIf="store.activeList()?.completedAt">
+        Završeno: {{ store.activeList()?.completedAt | date:'dd.MM.yyyy. HH:mm' }}
+      </p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item *ngFor="let item of store.items()">
+      <ion-label>
+        <h2>{{ item.naziv }}</h2>
+        <p>Šifra: {{ item.sifra }}</p>
+        <p>Količina: <strong>{{ item.quantity }}</strong></p>
+        <p *ngIf="item.purchasedQuantity > 0">Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></p>
+      </ion-label>
+      <ion-chip slot="end" color="primary">
+        {{ item.quantity }}
+      </ion-chip>
+    </ion-item>
+  </ion-list>
+
+  <div class="ion-text-center ion-padding" *ngIf="store.items().length === 0">
+    <p>Lista je prazna.</p>
+  </div>
+</ion-content>

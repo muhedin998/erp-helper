@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Katalog</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addProduct()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-searchbar
+    [(ngModel)]="searchText"
+    (ionInput)="onSearch($any($event.target).value)"
+    placeholder="Pretraži po nazivu, šifri, barkodu"
+    animated
+    debounce="300"
+  ></ion-searchbar>
+
+  <ion-list>
+    <ion-item-sliding *ngFor="let product of store.filteredProducts()">
+      <ion-item detail (click)="editProduct(product)">
+        <ion-label>
+          <h2>{{ product.naziv }}</h2>
+          <p>Šifra: {{ product.sifra }} | Barkod: {{ product.barcode || '-' }}</p>
+          <p *ngIf="product.cena">Cena: {{ product.cena | number:'1.2-2' }} RSD</p>
+          <ion-badge [color]="product.source === 'ACIS' ? 'primary' : 'warning'">
+            {{ product.source }}
+          </ion-badge>
+        </ion-label>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteProduct(product)">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+        <ion-item-option (click)="editProduct(product)">
+          <ion-icon slot="icon-only" name="create"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <div class="ion-text-center ion-padding" *ngIf="store.filteredProducts().length === 0">
+    <p>Nema artikala u katalogu.</p>
+    <ion-button (click)="addProduct()">Dodaj prvi artikal</ion-button>
+  </div>
+</ion-content>

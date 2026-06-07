@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Podešavanja</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item button (click)="about()">
+      <ion-icon slot="start" name="information-circle" color="primary"></ion-icon>
+      <ion-label>O aplikaciji</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list-header color="light">
+    <ion-label>Podaci</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item button (click)="clearHistory()">
+      <ion-icon slot="start" name="trash" color="danger"></ion-icon>
+      <ion-label color="danger">Obriši istoriju</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
