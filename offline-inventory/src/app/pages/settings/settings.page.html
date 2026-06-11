@@ -1,27 +1,62 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
+      <ion-back-button defaultHref="/home" icon="chevron-back"></ion-back-button>
     </ion-buttons>
     <ion-title>Podešavanja</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ion-item button (click)="about()">
-      <ion-icon slot="start" name="information-circle" color="primary"></ion-icon>
-      <ion-label>O aplikaciji</ion-label>
-    </ion-item>
-  </ion-list>
+  <div class="settings-sections">
+    <!-- About -->
+    <div class="settings-card" (click)="about()" tappable>
+      <div class="settings-icon about">
+        <ion-icon name="information-outline"></ion-icon>
+      </div>
+      <div class="settings-info">
+        <h3>O aplikaciji</h3>
+        <p>Offline Inventory Replenishment</p>
+      </div>
+      <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+    </div>
 
-  <ion-list-header color="light">
-    <ion-label>Podaci</ion-label>
-  </ion-list-header>
-  <ion-list>
-    <ion-item button (click)="clearHistory()">
-      <ion-icon slot="start" name="trash" color="danger"></ion-icon>
-      <ion-label color="danger">Obriši istoriju</ion-label>
-    </ion-item>
-  </ion-list>
+    <!-- Catalog section -->
+    <div class="section-label">Katalog</div>
+
+    <div class="settings-card">
+      <div class="settings-icon catalog">
+        <ion-icon name="cube-outline"></ion-icon>
+      </div>
+      <div class="settings-info">
+        <h3>Artikala u bazi</h3>
+        <p class="count">{{ productCount }}</p>
+      </div>
+    </div>
+
+    <div class="settings-card" (click)="reSeedCatalog()" tappable>
+      <div class="settings-icon reload">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </div>
+      <div class="settings-info">
+        <h3>Ponovo učitaj katalog</h3>
+        <p>Obriši ACIS artikle i ponovo ih učitaj</p>
+      </div>
+      <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+    </div>
+
+    <!-- Data section -->
+    <div class="section-label">Podaci</div>
+
+    <div class="settings-card danger" (click)="clearHistory()" tappable>
+      <div class="settings-icon danger-icon">
+        <ion-icon name="trash-outline"></ion-icon>
+      </div>
+      <div class="settings-info">
+        <h3>Obriši istoriju listi</h3>
+        <p>Ova akcija je nepovratna</p>
+      </div>
+      <ion-icon name="chevron-forward" class="chevron"></ion-icon>
+    </div>
+  </div>
 </ion-content>

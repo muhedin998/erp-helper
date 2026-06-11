@@ -1,57 +1,63 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button icon="chevron-back"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ store.activeList()?.naziv || 'Lista' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="exportPDF()">
-        <ion-icon slot="icon-only" name="print"></ion-icon>
+        <ion-icon slot="icon-only" name="print-outline"></ion-icon>
       </ion-button>
       <ion-button (click)="exportCSV()">
-        <ion-icon slot="icon-only" name="download"></ion-icon>
+        <ion-icon slot="icon-only" name="download-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-card color="light" class="ion-no-margin">
-    <ion-card-content>
-      <ion-item lines="none">
-        <ion-label>
-          <p>Status</p>
-          <ion-badge [color]="store.activeList()?.status === 'PURCHASED' ? 'success' : 'primary'">
-            {{ store.activeList()?.status === 'PURCHASED' ? 'Kupljena' : 'Spremna' }}
-          </ion-badge>
-        </ion-label>
-        <ion-label slot="end" class="ion-text-end">
-          <p>Artikala</p>
-          <strong>{{ store.itemCount() }}</strong>
-        </ion-label>
-      </ion-item>
-      <p *ngIf="store.activeList()?.note"><em>{{ store.activeList()?.note }}</em></p>
-      <p class="ion-no-margin ion-padding-top" *ngIf="store.activeList()?.completedAt">
-        Završeno: {{ store.activeList()?.completedAt | date:'dd.MM.yyyy. HH:mm' }}
-      </p>
-    </ion-card-content>
-  </ion-card>
+  <!-- Info card -->
+  <div class="info-card slide-in" *ngIf="store.activeList()">
+    <div class="info-row">
+      <div class="info-item">
+        <span class="info-label">Status</span>
+        <span class="status-badge" [class.draft]="store.activeList()?.status === 'DRAFT'" [class.ready]="store.activeList()?.status === 'READY_FOR_PURCHASE'" [class.purchased]="store.activeList()?.status === 'PURCHASED'">
+          {{ store.activeList()?.status === 'PURCHASED' ? 'Kupljena' : 'Spremna' }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Artikala</span>
+        <span class="info-value">{{ store.itemCount() }}</span>
+      </div>
+      <div class="info-item" *ngIf="store.activeList()?.completedAt">
+        <span class="info-label">Završeno</span>
+        <span class="info-value date">{{ store.activeList()?.completedAt | date:'dd.MM.' }}</span>
+      </div>
+    </div>
+    <p *ngIf="store.activeList()?.note" class="ion-padding-top note-text">
+      <ion-icon name="chatbubble-ellipses-outline" style="vertical-align: middle; font-size: 14px;"></ion-icon>
+      {{ store.activeList()?.note }}
+    </p>
+  </div>
 
-  <ion-list>
-    <ion-item *ngFor="let item of store.items()">
-      <ion-label>
-        <h2>{{ item.naziv }}</h2>
+  <!-- Items -->
+  <div style="padding: 4px 0 80px;">
+    <div class="item-card" *ngFor="let item of store.items()">
+      <div class="item-qty-badge">
+        <span class="qty-num">{{ item.quantity }}</span>
+      </div>
+      <div class="item-detail-info">
+        <h3>{{ item.naziv }}</h3>
         <p>Šifra: {{ item.sifra }}</p>
-        <p>Količina: <strong>{{ item.quantity }}</strong></p>
         <p *ngIf="item.purchasedQuantity > 0">Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></p>
-      </ion-label>
-      <ion-chip slot="end" color="primary">
-        {{ item.quantity }}
-      </ion-chip>
-    </ion-item>
-  </ion-list>
+        <p *ngIf="item.purchasedQuantity === 0 && store.activeList()?.status === 'PURCHASED'"><em>Nije kupljeno</em></p>
+      </div>
+    </div>
+  </div>
 
-  <div class="ion-text-center ion-padding" *ngIf="store.items().length === 0">
-    <p>Lista je prazna.</p>
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="store.items().length === 0">
+    <ion-icon name="basket-outline"></ion-icon>
+    <h3>Lista je prazna</h3>
   </div>
 </ion-content>

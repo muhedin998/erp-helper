@@ -1,6 +1,112 @@
-.checked {
+// ===== Purchase Mode Page =====
+
+.progress-bar {
+  height: 8px;
+  border-radius: 9999px;
+  margin-top: 8px;
+}
+
+.purchase-items {
+  padding: 4px 12px 80px;
+}
+
+.purchase-item {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.purchase-item:active {
+  transform: scale(0.98);
+}
+
+.purchase-item.checked {
   opacity: 0.6;
 }
-.line-through {
-  text-decoration: line-through;
+
+.checkbox-col {
+  flex-shrink: 0;
+}
+
+.custom-checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox.checked {
+  background: #8B5CF6;
+  border-color: #8B5CF6;
+
+  ion-icon {
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+  }
+}
+
+.purchase-info {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 2px;
+  }
+
+  .purchase-qty {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    margin: 0;
+
+    strong {
+      color: #8B5CF6;
+    }
+  }
+
+  .line-through {
+    text-decoration: line-through;
+  }
+}
+
+.purchase-qty-badge {
+  flex-shrink: 0;
+}
+
+.qty-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: #EDE9FE;
+  color: #5B21B6;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .purchase-item {
+    background: #1F2937;
+  }
+
+  .purchase-info h3 {
+    color: #E5E7EB;
+  }
 }

@@ -1,0 +1,108 @@
+// ===== Settings Page =====
+
+.settings-sections {
+  padding: 8px 12px 80px;
+}
+
+.section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 4px 8px;
+}
+
+.settings-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.settings-card:active {
+  transform: scale(0.98);
+}
+
+.settings-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.settings-icon.about {
+  background: #EDE9FE;
+  ion-icon { color: #5B21B6; }
+}
+
+.settings-icon.catalog {
+  background: #DCFCE7;
+  ion-icon { color: #166534; }
+}
+
+.settings-icon.reload {
+  background: #FEF3C7;
+  ion-icon { color: #92400E; }
+}
+
+.settings-icon.danger-icon {
+  background: #FEE2E2;
+  ion-icon { color: #DC2626; }
+}
+
+.settings-info {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 2px;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    margin: 0;
+  }
+
+  .count {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #8B5CF6;
+  }
+}
+
+.chevron {
+  color: #D1D5DB;
+  font-size: 18px;
+}
+
+.settings-card.danger .settings-info h3 {
+  color: #DC2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  .settings-card {
+    background: #1F2937;
+  }
+
+  .settings-info h3 {
+    color: #E5E7EB;
+  }
+}

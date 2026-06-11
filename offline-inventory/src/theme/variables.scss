@@ -1,2 +1,176 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Offline Inventory — Design System
+// Inspired by: modern smart-home UI (lavender + pastel green)
+// Font: Nunito
+
+// 1. Ionic CSS Variables
+:root {
+  /** Primary: Lavender / Purple **/
+  --ion-color-primary: #8B5CF6;
+  --ion-color-primary-rgb: 139, 92, 246;
+  --ion-color-primary-contrast: #FFFFFF;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #7C3AED;
+  --ion-color-primary-tint: #A78BFA;
+
+  /** Secondary: Pastel Green / Lime **/
+  --ion-color-secondary: #D9F99D;
+  --ion-color-secondary-rgb: 217, 249, 157;
+  --ion-color-secondary-contrast: #1F2937;
+  --ion-color-secondary-contrast-rgb: 31, 41, 55;
+  --ion-color-secondary-shade: #BEF264;
+  --ion-color-secondary-tint: #ECFCCB;
+
+  /** Tertiary: Soft Blue accent **/
+  --ion-color-tertiary: #60A5FA;
+  --ion-color-tertiary-rgb: 96, 165, 250;
+  --ion-color-tertiary-contrast: #FFFFFF;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #3B82F6;
+  --ion-color-tertiary-tint: #93C5FD;
+
+  /** Success: Green **/
+  --ion-color-success: #22C55E;
+  --ion-color-success-rgb: 34, 197, 94;
+  --ion-color-success-contrast: #FFFFFF;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #16A34A;
+  --ion-color-success-tint: #4ADE80;
+
+  /** Warning: Amber **/
+  --ion-color-warning: #F59E0B;
+  --ion-color-warning-rgb: 245, 158, 11;
+  --ion-color-warning-contrast: #FFFFFF;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #D97706;
+  --ion-color-warning-tint: #FBBF24;
+
+  /** Danger: Soft Red **/
+  --ion-color-danger: #EF4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #FFFFFF;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #DC2626;
+  --ion-color-danger-tint: #F87171;
+
+  /** Medium: Gray **/
+  --ion-color-medium: #9CA3AF;
+  --ion-color-medium-rgb: 156, 163, 175;
+  --ion-color-medium-contrast: #FFFFFF;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #6B7280;
+  --ion-color-medium-tint: #D1D5DB;
+
+  /** Light: Off-white **/
+  --ion-color-light: #F3F4F6;
+  --ion-color-light-rgb: 243, 244, 246;
+  --ion-color-light-contrast: #1F2937;
+  --ion-color-light-contrast-rgb: 31, 41, 55;
+  --ion-color-light-shade: #E5E7EB;
+  --ion-color-light-tint: #F9FAFB;
+
+  // --ion-color-dark already defined by Ionic
+
+
+  // Typography
+  --ion-font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  // Border radius overrides
+  --app-radius-sm: 12px;
+  --app-radius-md: 16px;
+  --app-radius-lg: 20px;
+  --app-radius-xl: 24px;
+  --app-radius-pill: 9999px;
+
+  // Shadows
+  --app-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --app-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --app-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --app-shadow-card: 0 2px 8px rgba(139, 92, 246, 0.08);
+}
+
+
+// 2. Ionic component overrides
+ion-button {
+  --border-radius: 9999px !important;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: none;
+}
+
+ion-card {
+  --border-radius: 20px;
+  border-radius: 20px;
+  box-shadow: var(--app-shadow-card);
+}
+
+ion-card-content {
+  padding: 16px 20px;
+}
+
+ion-searchbar {
+  --border-radius: 12px !important;
+  --box-shadow: none !important;
+  padding: 8px 12px;
+}
+
+ion-toolbar {
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+ion-item {
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  margin-bottom: 2px;
+}
+
+ion-list {
+  background: transparent;
+  padding: 0 12px;
+}
+
+ion-badge {
+  --padding-start: 10px;
+  --padding-end: 10px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+ion-header {
+  background: #F9FAFB;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+ion-header.ion-no-border {
+  border-bottom: none;
+}
+
+ion-footer {
+  background: #F9FAFB;
+  border-top: 1px solid #F3F4F6;
+}
+
+ion-footer.ion-no-border {
+  border-top: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  ion-header {
+    background: #1F2937;
+    border-bottom-color: #374151;
+  }
+
+  ion-footer {
+    background: #1F2937;
+    border-top-color: #374151;
+  }
+}
+
+ion-footer ion-toolbar {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 8px;
+  --padding-bottom: 12px;
+}

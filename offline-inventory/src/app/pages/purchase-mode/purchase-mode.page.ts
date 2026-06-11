@@ -6,6 +6,7 @@ import { ShoppingListStore } from '../../stores/shopping-list.store';
 @Component({
   selector: 'app-purchase-mode',
   templateUrl: './purchase-mode.page.html',
+  styleUrls: ['./purchase-mode.page.scss'],
   standalone: false,
 })
 export class PurchaseModePage implements OnInit {

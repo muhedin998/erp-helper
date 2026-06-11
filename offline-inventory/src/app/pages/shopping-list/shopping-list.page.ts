@@ -6,6 +6,7 @@ import { AlertController } from '@ionic/angular';
 @Component({
   selector: 'app-shopping-list',
   templateUrl: './shopping-list.page.html',
+  styleUrls: ['./shopping-list.page.scss'],
   standalone: false,
 })
 export class ShoppingListPage {

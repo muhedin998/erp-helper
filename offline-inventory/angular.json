@@ -37,7 +37,9 @@
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": []
+            "scripts": [
+              "node_modules/sql.js/dist/sql-wasm.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -49,8 +51,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "8kb",
+                  "maximumError": "16kb"
                 }
               ],
               "fileReplacements": [
@@ -77,6 +79,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "ssl": true,
+            "host": "0.0.0.0"
+          },
           "configurations": {
             "production": {
               "buildTarget": "app:build:production"

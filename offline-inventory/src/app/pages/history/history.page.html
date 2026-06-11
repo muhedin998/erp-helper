@@ -1,34 +1,40 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
+      <ion-back-button defaultHref="/home" icon="chevron-back"></ion-back-button>
     </ion-buttons>
     <ion-title>Istorija</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="ion-text-center ion-padding" *ngIf="store.history().length === 0">
-    <p>Nema istorije listi.</p>
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="store.history().length === 0">
+    <ion-icon name="time-outline"></ion-icon>
+    <h3>Nema istorije</h3>
+    <p>Završene liste će se pojaviti ovde</p>
   </div>
 
-  <ng-container *ngFor="let group of store.history()">
-    <ion-item-divider color="light">
-      <ion-label>
-        <strong>{{ group.date | date:'dd.MM.yyyy.' }}</strong>
-      </ion-label>
-    </ion-item-divider>
+  <!-- History groups -->
+  <div class="history-list" *ngIf="store.history().length > 0">
+    <div class="history-group" *ngFor="let group of store.history()">
+      <div class="date-header">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>{{ group.date | date:'EEEE, dd.MM.yyyy.' }}</span>
+      </div>
 
-    <ion-list>
-      <ion-item *ngFor="let list of group.lists" detail (click)="openList(list)">
-        <ion-label>
+      <div class="history-item" *ngFor="let list of group.lists" (click)="openList(list)" tappable>
+        <div class="history-icon">
+          <ion-icon [name]="list.status === 'PURCHASED' ? 'checkmark-circle' : 'cart-outline'"></ion-icon>
+        </div>
+        <div class="history-info">
           <h3>{{ list.naziv }}</h3>
           <p>{{ list.createdAt | date:'HH:mm' }}</p>
-        </ion-label>
-        <ion-badge slot="end" [color]="statusColor(list.status)">
+        </div>
+        <span class="status-badge" [class.draft]="list.status === 'DRAFT'" [class.ready]="list.status === 'READY_FOR_PURCHASE'" [class.purchased]="list.status === 'PURCHASED'">
           {{ statusLabel(list.status) }}
-        </ion-badge>
-      </ion-item>
-    </ion-list>
-  </ng-container>
+        </span>
+      </div>
+    </div>
+  </div>
 </ion-content>

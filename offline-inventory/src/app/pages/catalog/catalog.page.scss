@@ -1,1 +1,89 @@
-/* Catalog page styles */
+// ===== Catalog Page — Product Cards =====
+
+.product-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 12px 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.product-card:active {
+  transform: scale(0.98);
+}
+
+.product-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.product-info {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 4px;
+  }
+
+  .product-meta {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    margin: 0 0 2px;
+  }
+}
+
+.product-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+
+  ion-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    margin: 0;
+    height: 36px;
+  }
+}
+
+.product-tags {
+  margin-top: 8px;
+
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 8px;
+  }
+
+  .tag.acis {
+    background: #EDE9FE;
+    color: #5B21B6;
+  }
+
+  .tag.manual {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+}
+
+ion-list {
+  padding-top: 8px;
+  padding-bottom: 80px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .product-card {
+    background: #1F2937;
+  }
+
+  .product-info h3 {
+    color: #E5E7EB;
+  }
+}

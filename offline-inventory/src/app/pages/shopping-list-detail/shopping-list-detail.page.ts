@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { ShoppingListStore } from '../../stores/shopping-list.store';
 import { ProductStore } from '../../stores/product.store';
 import { BarcodeScannerService } from '../../services/barcode-scanner.service';
@@ -9,6 +10,7 @@ import { ExportService } from '../../services/export.service';
 @Component({
   selector: 'app-shopping-list-detail',
   templateUrl: './shopping-list-detail.page.html',
+  styleUrls: ['./shopping-list-detail.page.scss'],
   standalone: false,
 })
 export class ShoppingListDetailPage implements OnInit {
@@ -33,9 +35,26 @@ export class ShoppingListDetailPage implements OnInit {
   }
 
   async scanBarcode() {
+    console.log('[PAGE] scanBarcode called');
     const code = await this.scanner.startScan();
+    console.log('[PAGE] scanBarcode result:', code);
     if (code) {
+      console.log('[PAGE] processing barcode:', code);
       await this.processBarcode(code);
+    } else if (!Capacitor.isNativePlatform()) {
+      // Camera unavailable (HTTP on iOS, no permission, etc.)
+      // Auto-show manual entry as fallback
+      console.log('[PAGE] Camera not available, showing manual entry');
+      this.showManualEntry = true;
+      const toast = await this.toastCtrl.create({
+        message: 'Kamera nije dostupna. Unesite barkod ručno ispod.',
+        duration: 5000,
+        color: 'warning',
+        buttons: [{ text: 'OK', role: 'cancel' }],
+      });
+      await toast.present();
+    } else {
+      console.log('[PAGE] Native scan returned null (permission denied or cancelled)');
     }
   }
 
@@ -47,12 +66,10 @@ export class ShoppingListDetailPage implements OnInit {
   }
 
   private async processCode(code: string) {
-    let product = await this.productStore.findProductByBarcode(code);
-    if (!product) {
-      product = await this.productStore.findProductBySifra(code);
-    }
+    const product = await this.productStore.findProductByAnyCode(code);
 
     if (!product) {
+      console.log('[PAGE] Product not found for code:', code);
       const toast = await this.toastCtrl.create({
         message: `Artikal nije pronađen za: ${code}`,
         duration: 2000,
@@ -168,12 +185,11 @@ export class ShoppingListDetailPage implements OnInit {
           text: 'Pretraži',
           handler: async (data) => {
             if (data.query?.trim()) {
-              const product = await this.productStore.findProductBySifra(data.query.trim());
-              const byBarcode = product ? null : await this.productStore.findProductByBarcode(data.query.trim());
-              const found = product || byBarcode;
+              const q = data.query.trim();
+              const product = await this.productStore.findProductByAnyCode(q);
 
-              if (found) {
-                await this.store.addItemToActiveList(found.id);
+              if (product) {
+                await this.store.addItemToActiveList(product.id);
               } else {
                 const toast = await this.toastCtrl.create({
                   message: 'Artikal nije pronađen',

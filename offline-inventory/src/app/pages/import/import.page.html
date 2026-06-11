@@ -1,7 +1,7 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/home"></ion-back-button>
+      <ion-back-button defaultHref="/home" icon="chevron-back"></ion-back-button>
     </ion-buttons>
     <ion-title>Import kataloga</ion-title>
   </ion-toolbar>
@@ -9,44 +9,51 @@
 
 <ion-content>
   <div class="ion-padding" *ngIf="!showPreview">
-    <ion-card>
-      <ion-card-content>
-        <h2>CSV Import</h2>
-        <p>Podržani formati kolona: <strong>sifra, naziv, barcode, cena, grupa, jedinicaMere</strong></p>
-        <p class="ion-padding-top">
-          Artikli iz ACIS-a se zamenjuju. MANUAL artikli ostaju netaknuti.
-        </p>
+    <!-- Upload card -->
+    <div class="upload-card">
+      <div class="upload-icon">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </div>
+      <h3>CSV Import</h3>
+      <p>Kolona: <strong>sifra, naziv, barcode, cena, grupa, jedinicaMere</strong></p>
+      <p class="ion-padding-top">ACIS artikli se zamenjuju. MANUAL artikli ostaju.</p>
 
-        <div class="ion-padding-top">
-          <ion-button expand="block" (click)="fileInput.click()" size="large">
-            <ion-icon slot="start" name="document"></ion-icon>
-            Odaberi CSV fajl
-          </ion-button>
-          <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" hidden />
-        </div>
-      </ion-card-content>
-    </ion-card>
+      <div class="ion-padding-top">
+        <ion-button expand="block" (click)="fileInput.click()" class="pill-button" color="primary">
+          <ion-icon slot="start" name="document-outline"></ion-icon>
+          Odaberi CSV fajl
+        </ion-button>
+        <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" hidden />
+      </div>
+    </div>
   </div>
 
   <!-- Preview -->
   <ng-container *ngIf="showPreview">
-    <ion-card color="light" class="ion-no-margin">
-      <ion-card-content>
-        <p><strong>{{ fileName }}</strong></p>
-        <p>{{ previewRows.length }} redova pronađeno.</p>
-      </ion-card-content>
-    </ion-card>
+    <div class="info-card slide-in">
+      <div class="info-row">
+        <div class="info-item">
+          <span class="info-label">Fajl</span>
+          <span class="info-value" style="font-size: 0.9rem;">{{ fileName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Redova</span>
+          <span class="info-value">{{ previewRows.length }}</span>
+        </div>
+      </div>
+    </div>
 
-    <div class="ion-padding">
+    <div class="ion-padding-horizontal ion-padding-top">
       <ion-grid>
         <ion-row>
           <ion-col size="6">
-            <ion-button expand="block" (click)="confirmImport()" color="primary">
+            <ion-button expand="block" (click)="confirmImport()" class="pill-button" color="primary">
+              <ion-icon slot="start" name="checkmark-outline"></ion-icon>
               Potvrdi uvoz
             </ion-button>
           </ion-col>
           <ion-col size="6">
-            <ion-button expand="block" (click)="cancelImport()" fill="outline" color="medium">
+            <ion-button expand="block" (click)="cancelImport()" fill="outline" class="pill-button" color="medium">
               Odustani
             </ion-button>
           </ion-col>
@@ -54,18 +61,18 @@
       </ion-grid>
     </div>
 
-    <ion-list>
-      <ion-item *ngFor="let row of previewRows.slice(0, 50)">
-        <ion-label>
+    <div style="padding: 4px 12px 80px;">
+      <div class="product-card" *ngFor="let row of previewRows.slice(0, 50)">
+        <div class="product-info">
           <h3>{{ row.naziv }}</h3>
-          <p>Šifra: {{ row.sifra }} | Barkod: {{ row.barcode || '-' }}</p>
-          <p *ngIf="row.cena">Cena: {{ row.cena }} RSD</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+          <p class="product-meta">Šifra: {{ row.sifra }} <span *ngIf="row.barcode">| Barkod: {{ row.barcode }}</span></p>
+          <p class="product-meta" *ngIf="row.cena">Cena: {{ row.cena }} RSD</p>
+        </div>
+      </div>
+    </div>
 
     <div class="ion-text-center ion-padding" *ngIf="previewRows.length > 50">
-      <p>Prikazano prvih 50 od {{ previewRows.length }} artikala.</p>
+      <p style="color:#9CA3AF;font-size:0.85rem;">Prikazano prvih 50 od {{ previewRows.length }} artikala.</p>
     </div>
   </ng-container>
 </ion-content>

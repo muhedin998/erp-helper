@@ -1,78 +1,114 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>ERP Helper</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
+    <ion-title>Offline Inventory</ion-title>
     <ion-buttons slot="end">
       <ion-button routerLink="/settings">
-        <ion-icon slot="icon-only" name="settings"></ion-icon>
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding">
-    <h1 class="app-title">Offline Inventory</h1>
-    <p class="subtitle">Dopuna polica &amp; Nabavka</p>
-
-    <!-- New list CTA -->
-    <ion-button expand="block" (click)="createNewList()" size="large" color="primary" class="new-list-btn">
-      <ion-icon slot="start" name="add-circle"></ion-icon>
-      Nova lista
-    </ion-button>
+<ion-content class="ion-padding-horizontal">
+  <!-- Greeting Section -->
+  <div class="greeting-section slide-in">
+    <h1 class="greeting-title">
+      Dobro jutro! 👋
+    </h1>
+    <p class="greeting-subtitle">
+      <ion-icon name="cube-outline" style="vertical-align: middle;"></ion-icon>
+      Katalog: <strong>{{ catalogProductCount > 0 ? catalogProductCount + ' artikala' : 'Učitavanje...' }}</strong>
+    </p>
   </div>
 
-  <!-- Quick actions -->
-  <ion-card>
+  <!-- Catalog empty error (persistent) -->
+  <ion-card color="danger" *ngIf="catalogEmpty" class="ion-margin-bottom">
     <ion-card-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col size="4" class="ion-text-center" routerLink="/catalog">
-            <ion-icon name="folder" size="large" color="primary"></ion-icon>
-            <p>Katalog</p>
-          </ion-col>
-          <ion-col size="4" class="ion-text-center" routerLink="/shopping-list">
-            <ion-icon name="list" size="large" color="primary"></ion-icon>
-            <p>Liste</p>
-          </ion-col>
-          <ion-col size="4" class="ion-text-center" routerLink="/history">
-            <ion-icon name="time" size="large" color="primary"></ion-icon>
-            <p>Istorija</p>
-          </ion-col>
-        </ion-row>
-        <ion-row class="ion-padding-top">
-          <ion-col size="4" class="ion-text-center" routerLink="/import">
-            <ion-icon name="cloud-upload" size="large" color="secondary"></ion-icon>
-            <p>Import</p>
-          </ion-col>
-          <ion-col size="4" class="ion-text-center" (click)="createNewList()">
-            <ion-icon name="scan" size="large" color="success"></ion-icon>
-            <p>Skeniraj</p>
-          </ion-col>
-          <ion-col size="4" class="ion-text-center" routerLink="/settings">
-            <ion-icon name="settings" size="large" color="medium"></ion-icon>
-            <p>Podešavanja</p>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+      <h2>⚠️ Katalog nije učitan</h2>
+      <p>{{ catalogError }}</p>
+      <p *ngIf="catalogErrorDetails" style="font-size:0.85em;opacity:0.8;">{{ catalogErrorDetails }}</p>
+      <div class="ion-text-center ion-padding-top">
+        <ion-button size="small" (click)="retrySeed()" color="light" class="pill-button">
+          <ion-icon slot="start" name="refresh-outline"></ion-icon>
+          Ponovo učitaj katalog
+        </ion-button>
+      </div>
     </ion-card-content>
   </ion-card>
 
-  <!-- Recent lists -->
-  <ion-card *ngIf="recentLists.length > 0">
-    <ion-card-header>
-      <ion-card-title>Nedavne liste</ion-card-title>
-    </ion-card-header>
-    <ion-list>
-      <ion-item *ngFor="let list of recentLists" detail
+  <!-- Quick Actions Grid (2x2) -->
+  <div class="actions-grid">
+    <div class="grid-card action-card active" (click)="createNewList()">
+      <ion-icon name="add-circle-outline"></ion-icon>
+      <span class="card-label">Nova lista</span>
+    </div>
+    <div class="grid-card action-card inactive" routerLink="/catalog">
+      <ion-icon name="folder-open-outline"></ion-icon>
+      <span class="card-label">Katalog</span>
+    </div>
+    <div class="grid-card action-card inactive" routerLink="/shopping-list">
+      <ion-icon name="list-outline"></ion-icon>
+      <span class="card-label">Liste</span>
+    </div>
+    <div class="grid-card action-card inactive" routerLink="/history">
+      <ion-icon name="time-outline"></ion-icon>
+      <span class="card-label">Istorija</span>
+    </div>
+  </div>
+
+  <!-- Secondary row -->
+  <div class="secondary-actions">
+    <div class="grid-card action-card inactive small" routerLink="/import">
+      <ion-icon name="cloud-upload-outline"></ion-icon>
+      <span class="card-label">Import</span>
+    </div>
+    <div class="grid-card action-card inactive small" routerLink="/settings">
+      <ion-icon name="settings-outline"></ion-icon>
+      <span class="card-label">Podešavanja</span>
+    </div>
+  </div>
+
+  <!-- Recent Lists -->
+  <div *ngIf="recentLists.length > 0" class="section slide-in">
+    <div class="section-header">
+      <h2>Nedavne liste</h2>
+      <span class="see-all" routerLink="/shopping-list">Sve liste</span>
+    </div>
+
+    <div class="list-cards">
+      <div class="list-card" *ngFor="let list of recentLists"
         [routerLink]="list.status === 'DRAFT' || list.status === 'READY_FOR_PURCHASE' ? ['/shopping-list-detail', list.id] : ['/list-detail', list.id]">
-        <ion-label>
-          <h3>{{ list.naziv }}</h3>
-          <p>{{ list.createdAt | date:'dd.MM.yyyy. HH:mm' }}</p>
-        </ion-label>
-        <ion-badge slot="end" [color]="list.status === 'DRAFT' ? 'warning' : list.status === 'PURCHASED' ? 'success' : 'primary'">
+        <div class="list-card-main">
+          <div class="list-card-icon">
+            <ion-icon [name]="list.status === 'PURCHASED' ? 'checkmark-circle' : 'cart-outline'"></ion-icon>
+          </div>
+          <div class="list-card-info">
+            <h3>{{ list.naziv }}</h3>
+            <p>{{ list.createdAt | date:'dd.MM.yyyy. HH:mm' }}</p>
+          </div>
+        </div>
+        <span class="status-badge" [class.draft]="list.status === 'DRAFT'" [class.ready]="list.status === 'READY_FOR_PURCHASE'" [class.purchased]="list.status === 'PURCHASED'">
           {{ list.status === 'DRAFT' ? 'Skica' : list.status === 'PURCHASED' ? 'Kupljena' : 'Spremna' }}
-        </ion-badge>
-      </ion-item>
-    </ion-list>
-  </ion-card>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!catalogEmpty && recentLists.length === 0">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <h3>Nema listi</h3>
+    <p>Kreirajte prvu listu za nabavku</p>
+    <ion-button (click)="createNewList()" class="pill-button" color="primary">
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      Nova lista
+    </ion-button>
+  </div>
 </ion-content>
+
+<!-- FAB -->
+<ion-fab vertical="bottom" horizontal="center" slot="fixed">
+  <ion-fab-button class="fab-primary" (click)="createNewList()">
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

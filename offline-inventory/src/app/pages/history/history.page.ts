@@ -5,6 +5,7 @@ import { ShoppingListStore } from '../../stores/shopping-list.store';
 @Component({
   selector: 'app-history',
   templateUrl: './history.page.html',
+  styleUrls: ['./history.page.scss'],
   standalone: false,
 })
 export class HistoryPage implements OnInit {

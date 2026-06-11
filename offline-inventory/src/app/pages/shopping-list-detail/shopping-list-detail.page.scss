@@ -1,0 +1,155 @@
+// ===== Shopping List Detail Page =====
+
+.info-card {
+  background: #F3F4F6;
+  border-radius: 20px;
+  padding: 16px 20px;
+  margin: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #8B5CF6;
+}
+
+.note-text {
+  font-size: 0.85rem;
+  color: #6B7280;
+  margin: 0;
+  font-style: italic;
+}
+
+// Manual entry
+.manual-entry {
+  margin: 0 0 12px;
+}
+
+.manual-entry-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F3F4F6;
+  border-radius: 14px;
+  padding: 6px 6px 6px 16px;
+}
+
+.manual-input {
+  --background: transparent;
+  --padding-start: 0;
+  --placeholder-color: #9CA3AF;
+  --color: #1F2937;
+  font-size: 0.95rem;
+}
+
+// Items
+.items-section {
+  padding: 4px 12px 100px;
+}
+
+.item-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.item-card-left {
+  flex-shrink: 0;
+}
+
+.item-qty {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #EDE9FE;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.qty-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #5B21B6;
+  line-height: 1.1;
+}
+
+.qty-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #7C3AED;
+  text-transform: uppercase;
+}
+
+.item-card-center {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 2px;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    margin: 0 0 1px;
+  }
+}
+
+.item-card-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  ion-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    margin: 0;
+    height: 32px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .item-card {
+    background: #1F2937;
+  }
+
+  .item-card-center h3 {
+    color: #E5E7EB;
+  }
+
+  .info-card {
+    background: #1F2937;
+  }
+}

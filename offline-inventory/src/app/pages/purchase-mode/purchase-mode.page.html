@@ -1,60 +1,56 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button icon="chevron-back"></ion-back-button>
     </ion-buttons>
     <ion-title>Kupovina</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-card color="light" class="ion-no-margin">
-    <ion-card-content class="ion-text-center">
-      <h2>{{ store.activeList()?.naziv }}</h2>
-      <ion-progress-bar [value]="store.purchaseProgress() / 100" color="success"></ion-progress-bar>
-      <p>
-        {{ store.checkedCount() }} / {{ store.itemCount() }} &mdash; 
-        <strong>{{ store.purchaseProgress() }}%</strong> završeno
-      </p>
-    </ion-card-content>
-  </ion-card>
+  <!-- Store header -->
+  <div class="progress-section slide-in" *ngIf="store.activeList()">
+    <h2>{{ store.activeList()?.naziv }}</h2>
+    <div class="progress-percent">{{ store.purchaseProgress() }}%</div>
+    <p>{{ store.checkedCount() }} od {{ store.itemCount() }} artikala</p>
+    <ion-progress-bar [value]="store.purchaseProgress() / 100" color="primary" class="progress-bar"></ion-progress-bar>
+  </div>
 
-  <ion-list>
-    <ion-item *ngFor="let item of store.items()" [class.checked]="item.checked">
-      <ion-checkbox
-        slot="start"
-        [checked]="item.checked"
-        (ionChange)="toggleItem(item)"
-      ></ion-checkbox>
-      <ion-label>
-        <h2 [class.line-through]="item.checked">{{ item.naziv }}</h2>
-        <p>
-          <span [class.line-through]="item.checked">
-            {{ item.quantity }} kom
-          </span>
-          <span *ngIf="item.checked && item.purchasedQuantity > 0">
-            &mdash; Kupljeno: <strong>{{ item.purchasedQuantity }}</strong>
-          </span>
-          <span *ngIf="item.checked && item.purchasedQuantity === 0">
-            &mdash; <em>bez kupovine</em>
-          </span>
+  <!-- Items -->
+  <div class="purchase-items">
+    <div class="purchase-item" *ngFor="let item of store.items()" [class.checked]="item.checked" tappable (click)="toggleItem(item)">
+      <div class="checkbox-col">
+        <div class="custom-checkbox" [class.checked]="item.checked">
+          <ion-icon *ngIf="item.checked" name="checkmark"></ion-icon>
+        </div>
+      </div>
+      <div class="purchase-info">
+        <h3 [class.line-through]="item.checked">{{ item.naziv }}</h3>
+        <p class="purchase-qty" [class.line-through]="item.checked">
+          <span>{{ item.quantity }} kom</span>
+          <span *ngIf="item.checked && item.purchasedQuantity > 0"> — Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></span>
+          <span *ngIf="item.checked && item.purchasedQuantity === 0"> — <em>bez kupovine</em></span>
         </p>
-      </ion-label>
-      <ion-chip slot="end" color="primary" *ngIf="!item.checked">
-        {{ item.quantity }}
-      </ion-chip>
-      <ion-icon slot="end" color="success" name="checkmark-circle" *ngIf="item.checked"></ion-icon>
-    </ion-item>
-  </ion-list>
+      </div>
+      <div class="purchase-qty-badge" *ngIf="!item.checked">
+        <span class="qty-num">{{ item.quantity }}</span>
+      </div>
+    </div>
+  </div>
 
-  <div class="ion-text-center ion-padding" *ngIf="store.items().length === 0">
-    <p>Lista je prazna.</p>
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="store.items().length === 0">
+    <ion-icon name="basket-outline"></ion-icon>
+    <h3>Lista je prazna</h3>
+    <p>Nema artikala za kupovinu</p>
   </div>
 </ion-content>
 
-<ion-footer *ngIf="store.purchaseProgress() === 100">
+<!-- Footer when 100% completed -->
+<ion-footer class="ion-no-border" *ngIf="store.purchaseProgress() === 100">
   <ion-toolbar>
-    <ion-button expand="block" (click)="finishPurchase()" size="large" color="success">
+    <ion-button expand="block" (click)="finishPurchase()" class="pill-button" color="secondary">
+      <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
       Završi kupovinu
     </ion-button>
   </ion-toolbar>

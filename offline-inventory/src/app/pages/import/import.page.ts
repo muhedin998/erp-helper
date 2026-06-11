@@ -16,6 +16,7 @@ interface CsvRow {
 @Component({
   selector: 'app-import',
   templateUrl: './import.page.html',
+  styleUrls: ['./import.page.scss'],
   standalone: false,
 })
 export class ImportPage {
@@ -92,7 +93,8 @@ export class ImportPage {
                 }
               }
 
-              await this.productStore.loadProducts();
+              await this.db.rebuildFtsIfAvailable();
+              await this.productStore.searchProducts('');
 
               const toast = await this.toastCtrl.create({
                 message: `Uvezeno ${this.previewRows.length} artikala.`,

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { ProductStore } from '../../stores/product.store';
 
@@ -8,18 +8,20 @@ import { ProductStore } from '../../stores/product.store';
   styleUrls: ['./catalog.page.scss'],
   standalone: false,
 })
-export class CatalogPage implements OnInit {
+export class CatalogPage {
   store = inject(ProductStore);
   searchText = '';
 
-  constructor(private alertCtrl: AlertController) {}
-
-  ngOnInit() {
-    this.store.loadProducts();
+  constructor(private alertCtrl: AlertController) {
+    this.store.searchProducts('');
   }
 
   onSearch(query: string) {
-    this.store.setSearchQuery(query);
+    this.store.searchProducts(query);
+  }
+
+  loadMore(event: any) {
+    this.store.loadMore().then(() => event?.target?.complete());
   }
 
   async addProduct() {

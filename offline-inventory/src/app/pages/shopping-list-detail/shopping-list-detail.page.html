@@ -1,15 +1,15 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/shopping-list"></ion-back-button>
+      <ion-back-button defaultHref="/shopping-list" icon="chevron-back"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ store.activeList()?.naziv || 'Lista' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="addNote()">
-        <ion-icon slot="icon-only" name="document-text"></ion-icon>
+      <ion-button *ngIf="store.isDraft()" (click)="addNote()">
+        <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
       </ion-button>
       <ion-button (click)="exportPDF()">
-        <ion-icon slot="icon-only" name="print"></ion-icon>
+        <ion-icon slot="icon-only" name="print-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -17,103 +17,116 @@
 
 <ion-content>
   <!-- Info bar -->
-  <ion-card *ngIf="store.activeList()" class="ion-no-margin" color="light">
-    <ion-card-content class="ion-text-center">
-      <p>
-        <ion-badge [color]="store.isDraft() ? 'warning' : 'primary'">
-          {{ store.isDraft() ? 'SKICA' : store.activeList()?.status === 'READY_FOR_PURCHASE' ? 'SPREMNA' : 'KUPLJENA' }}
-        </ion-badge>
-      </p>
-      <p *ngIf="store.activeList()?.note" class="ion-padding-top">
-        <em>{{ store.activeList()?.note }}</em>
-      </p>
-      <p class="ion-no-margin">
-        Artikala: {{ store.itemCount() }} | Ukupno komada: {{ store.totalQuantity() }}
-      </p>
-    </ion-card-content>
-  </ion-card>
+  <div class="info-card slide-in" *ngIf="store.activeList()">
+    <div class="info-row">
+      <div class="info-item">
+        <span class="info-label">Status</span>
+        <span class="status-badge" [class.draft]="store.isDraft()" [class.ready]="store.activeList()?.status === 'READY_FOR_PURCHASE'" [class.purchased]="store.activeList()?.status === 'PURCHASED'">
+          {{ store.isDraft() ? 'Skica' : store.activeList()?.status === 'READY_FOR_PURCHASE' ? 'Spremna' : 'Kupljena' }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Artikala</span>
+        <span class="info-value">{{ store.itemCount() }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Komada</span>
+        <span class="info-value">{{ store.totalQuantity() }}</span>
+      </div>
+    </div>
+    <p *ngIf="store.activeList()?.note" class="ion-padding-top note-text">
+      <ion-icon name="chatbubble-ellipses-outline" style="vertical-align: middle; font-size: 14px;"></ion-icon>
+      {{ store.activeList()?.note }}
+    </p>
+  </div>
 
-  <!-- Scan / Manual entry -->
-  <div class="ion-padding" *ngIf="store.isDraft()">
+  <!-- Scan / Manual entry for draft -->
+  <div class="ion-padding-horizontal" *ngIf="store.isDraft()">
     <ion-grid>
       <ion-row>
         <ion-col size="6">
-          <ion-button expand="block" (click)="scanBarcode()" size="large">
-            <ion-icon slot="start" name="camera"></ion-icon>
+          <ion-button expand="block" (click)="scanBarcode()" class="pill-button" color="primary">
+            <ion-icon slot="start" name="camera-outline"></ion-icon>
             Skeniraj
           </ion-button>
         </ion-col>
         <ion-col size="3">
-          <ion-button expand="block" (click)="showManualEntry = !showManualEntry" fill="outline">
-            <ion-icon slot="icon-only" name="keypad"></ion-icon>
+          <ion-button expand="block" (click)="showManualEntry = !showManualEntry" fill="outline" class="pill-button">
+            <ion-icon slot="icon-only" name="keypad-outline"></ion-icon>
           </ion-button>
         </ion-col>
         <ion-col size="3">
-          <ion-button expand="block" (click)="searchAndAdd()" fill="outline">
-            <ion-icon slot="icon-only" name="search"></ion-icon>
+          <ion-button expand="block" (click)="searchAndAdd()" fill="outline" class="pill-button">
+            <ion-icon slot="icon-only" name="search-outline"></ion-icon>
           </ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>
 
-    <div *ngIf="showManualEntry" class="ion-padding-top">
-      <ion-item>
+    <div *ngIf="showManualEntry" class="manual-entry slide-in">
+      <div class="manual-entry-box">
         <ion-input
           [(ngModel)]="manualCode"
           placeholder="Unesite barkod ili šifru"
           (keyup.enter)="processManualCode()"
+          class="manual-input"
         ></ion-input>
-        <ion-button slot="end" (click)="processManualCode()" fill="clear">
+        <ion-button (click)="processManualCode()" fill="solid" color="primary" class="pill-button" size="small">
           Dodaj
         </ion-button>
-      </ion-item>
+      </div>
     </div>
   </div>
 
   <!-- Items list -->
-  <ion-list>
-    <ion-item-sliding *ngFor="let item of store.items()">
-      <ion-item>
-        <ion-label>
-          <h2>{{ item.naziv }}</h2>
-          <p>Šifra: {{ item.sifra }} | Barkod: {{ item.barcode || '-' }}</p>
-          <p *ngIf="item.cena">Cena: {{ item.cena | number:'1.2-2' }} RSD</p>
-        </ion-label>
-        <ion-badge slot="end" color="primary" class="qty-badge">
-          {{ item.quantity }}
-        </ion-badge>
-      </ion-item>
+  <div class="items-section">
+    <div class="item-card" *ngFor="let item of store.items()" tappable>
+      <div class="item-card-left">
+        <div class="item-qty">
+          <span class="qty-number">{{ item.quantity }}</span>
+          <span class="qty-label">kom</span>
+        </div>
+      </div>
+      <div class="item-card-center">
+        <h3>{{ item.naziv }}</h3>
+        <p>Šifra: {{ item.sifra }} <span *ngIf="item.barcode">| Barkod: {{ item.barcode }}</span></p>
+        <p *ngIf="item.cena">{{ item.cena | number:'1.2-2' }} RSD</p>
+      </div>
+      <div class="item-card-right" *ngIf="store.isDraft()">
+        <ion-button fill="clear" size="small" (click)="editItem(item)">
+          <ion-icon slot="icon-only" name="create-outline" color="primary"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="removeItem(item)">
+          <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
 
-      <ion-item-options side="end" *ngIf="store.isDraft()">
-        <ion-item-option (click)="editItem(item)">
-          <ion-icon slot="icon-only" name="create"></ion-icon>
-        </ion-item-option>
-        <ion-item-option color="danger" (click)="removeItem(item)">
-          <ion-icon slot="icon-only" name="trash"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
-  </ion-list>
-
-  <div class="ion-text-center ion-padding" *ngIf="store.items().length === 0">
-    <p>Lista je prazna.</p>
-    <p *ngIf="store.isDraft()">Skenirajte barkod ili dodajte artikal ručno.</p>
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="store.items().length === 0">
+    <ion-icon name="basket-outline"></ion-icon>
+    <h3>Lista je prazna</h3>
+    <p *ngIf="store.isDraft()">Skenirajte barkod ili dodajte artikal ručno</p>
+    <p *ngIf="!store.isDraft()">Nema artikala u ovoj listi</p>
   </div>
 </ion-content>
 
-<!-- Footer -->
-<ion-footer *ngIf="store.isDraft() && store.items().length > 0">
+<!-- Footer for draft -->
+<ion-footer class="ion-no-border" *ngIf="store.isDraft() && store.items().length > 0">
   <ion-toolbar>
-    <ion-button expand="block" (click)="finishList()" size="large" color="primary">
+    <ion-button expand="block" (click)="finishList()" class="pill-button" color="secondary">
+      <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
       Završi listu
     </ion-button>
   </ion-toolbar>
 </ion-footer>
 
-<!-- Purchase mode button for ready lists -->
-<ion-footer *ngIf="store.activeList()?.status === 'READY_FOR_PURCHASE'">
+<!-- Footer for ready lists -->
+<ion-footer class="ion-no-border" *ngIf="store.activeList()?.status === 'READY_FOR_PURCHASE'">
   <ion-toolbar>
-    <ion-button expand="block" [routerLink]="['/purchase-mode', listId]" size="large" color="success">
+    <ion-button expand="block" [routerLink]="['/purchase-mode', listId]" class="pill-button" color="primary">
+      <ion-icon slot="start" name="cart-outline"></ion-icon>
       Započni kupovinu
     </ion-button>
   </ion-toolbar>

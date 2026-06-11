@@ -6,6 +6,7 @@ import { ExportService } from '../../services/export.service';
 @Component({
   selector: 'app-list-detail',
   templateUrl: './list-detail.page.html',
+  styleUrls: ['./list-detail.page.scss'],
   standalone: false,
 })
 export class ListDetailPage implements OnInit {

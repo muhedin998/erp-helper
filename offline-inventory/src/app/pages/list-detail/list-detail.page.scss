@@ -1,0 +1,65 @@
+// ===== List Detail Page (Purchased / Read-only) =====
+
+ion-content {
+  --padding-bottom: 80px;
+}
+
+.item-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 12px 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.item-qty-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #EDE9FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .qty-num {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #5B21B6;
+  }
+}
+
+.item-detail-info {
+  flex: 1;
+  min-width: 0;
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 2px;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    margin: 0 0 1px;
+
+    strong {
+      color: #8B5CF6;
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .item-card {
+    background: #1F2937;
+  }
+
+  .item-detail-info h3 {
+    color: #E5E7EB;
+  }
+}

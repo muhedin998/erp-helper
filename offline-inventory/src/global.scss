@@ -1,37 +1,260 @@
 /*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * Offline Inventory — Global Styles
+ * ---------------------------------------------------------------
+ * Nunito font, custom utility classes, shared component styles
  */
 
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+/* ===== 1. Typography ===== */
+* {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.app-header-title {
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: #1F2937;
+}
+
+.app-subtitle {
+  color: #9CA3AF;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ===== 2. Card Styles ===== */
+.rounded-card {
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+  overflow: hidden;
+}
+
+.action-card {
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08) !important;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.action-card:active {
+  transform: scale(0.97);
+}
+
+.action-card.active {
+  background: #8B5CF6;
+  color: #FFFFFF;
+}
+
+.action-card.active ion-icon {
+  color: #FFFFFF !important;
+}
+
+.action-card.active .card-label {
+  color: #FFFFFF !important;
+}
+
+.action-card.inactive {
+  background: #F3F4F6;
+}
+
+.action-card.inactive ion-icon {
+  color: #8B5CF6;
+}
+
+.action-card.inactive .card-label {
+  color: #1F2937;
+}
+
+.grid-card {
+  border-radius: 20px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  text-align: center;
+}
+
+.grid-card ion-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.grid-card .card-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* ===== 3. Button Styles ===== */
+.pill-button {
+  --border-radius: 9999px !important;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+/* ===== 4. FAB Styles ===== */
+.fab-primary {
+  width: 56px;
+  height: 56px;
+  --background: #D9F99D;
+  --background-activated: #BEF264;
+  --color: #1F2937;
+  --box-shadow: 0 4px 12px rgba(217, 249, 157, 0.4);
+}
+
+/* ===== 5. Status badges ===== */
+.status-draft {
+  --background: #FEF3C7;
+  --color: #92400E;
+}
+
+.status-ready {
+  --background: #EDE9FE;
+  --color: #5B21B6;
+}
+
+.status-purchased {
+  --background: #DCFCE7;
+  --color: #166534;
+}
+
+/* ===== 6. Searchbar enhancement ===== */
+.custom-searchbar {
+  --background: #F3F4F6;
+  --border-radius: 12px;
+  --placeholder-color: #9CA3AF;
+  --icon-color: #9CA3AF;
+}
+
+/* ===== 7. Header toolbars ===== */
+.page-header {
+  --background: #F9FAFB;
+  --color: #1F2937;
+}
+
+// Dark mode header
+@media (prefers-color-scheme: dark) {
+  .page-header {
+    --background: #1F2937;
+    --color: #E5E7EB;
+  }
+}
+
+.page-header ion-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* ===== 8. List item styling ===== */
+.rounded-list-item {
+  --background: #FFFFFF;
+  --border-radius: 12px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== 9. Info card ===== */
+.info-card {
+  background: #F3F4F6;
+  border-radius: 20px;
+  padding: 16px 20px;
+  margin: 12px;
+}
+
+/* ===== 10. Progress section ===== */
+.progress-section {
+  background: #F3F4F6;
+  border-radius: 20px;
+  padding: 20px;
+  margin: 12px;
+  text-align: center;
+}
+
+.progress-section h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.progress-section .progress-percent {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #8B5CF6;
+  margin: 8px 0;
+}
+
+.progress-section p {
+  color: #9CA3AF;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ===== 11. Empty state ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  font-size: 64px;
+  color: #D1D5DB;
+  margin-bottom: 12px;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #6B7280;
+  margin: 0 0 4px;
+}
+
+.empty-state p {
+  color: #9CA3AF;
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+
+/* ===== 12. Item divider ===== */
+.rounded-divider {
+  background: transparent !important;
+  --background: transparent !important;
+  --padding-start: 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #6B7280;
+  margin-top: 8px;
+  min-height: 36px;
+}
+
+/* ===== 13. Slide animation ===== */
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
