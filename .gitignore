@@ -1,0 +1,31 @@
+# Large JSON exports (source data, not needed in the app)
+db_export.json
+products_export.json
+
+# SQLite temporary files
+products.db-shm
+products.db-wal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tooling
+.commandcode/
+.reasonix/
+
+# Codegraph database (tool) - managed by its own .gitignore
+node_modules/
+
+# Build output
+offline-inventory/www/
+offline-inventory/www2/
+
+# Environment
+.env
