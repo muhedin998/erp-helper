@@ -90,10 +90,10 @@ export class SeedDataService {
   private async loadSeedProducts(): Promise<SeedResult & { products?: (Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & { id: number; createdAt: string; updatedAt: string })[] }> {
     try {
       // Fetch gzip-compressed JSON (~1.6 MB) instead of raw SQLite (~10.7 MB)
-      // The gzipped JSON is much more reliable over self-signed HTTPS on iOS Safari
-      const response = await fetch('assets/seed-products.json.gz');
+      // Use .bin extension to avoid Android WebView / AAPT issues with .gz files
+      const response = await fetch('assets/seed-products.json.bin');
       if (!response.ok) {
-        const msg = `seed-products.json.gz fetch returned HTTP ${response.status}`;
+        const msg = `seed-products.json.bin fetch returned HTTP ${response.status}`;
         console.error(msg);
         return {
           success: false, productCount: 0,
@@ -114,17 +114,24 @@ export class SeedDataService {
         };
       }
 
-      // Decompress gzip
+      // Decompress gzip — if the platform already auto-decompressed (e.g. Android
+      // WebView with Content-Encoding: gzip), fall back to using the raw bytes.
       let json: string;
       try {
         const decompressed = pako.inflate(compressed, { to: 'string' });
         json = decompressed as string;
       } catch (gzErr: any) {
-        return {
-          success: false, productCount: 0,
-          error: 'Greška pri dekompresiji kataloga.',
-          errorDetails: `${gzErr?.message || gzErr}`
-        };
+        // Possibly already decompressed by the platform — try parsing as-is
+        try {
+          json = new TextDecoder().decode(compressed);
+          JSON.parse(json); // validate it's actually JSON
+        } catch {
+          return {
+            success: false, productCount: 0,
+            error: 'Greška pri dekompresiji kataloga.',
+            errorDetails: `${gzErr?.message || gzErr}`
+          };
+        }
       }
 
       // Parse JSON (compact format with short field names)
