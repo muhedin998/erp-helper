@@ -20,11 +20,7 @@ export class SeedDataService {
   getLastErrorDetails(): string | null { return this.lastErrorDetails; }
 
   async seedIfEmpty(onProgress?: (done: number, total: number) => void): Promise<SeedResult> {
-    // Source of truth: the schema_version meta marker, written ONLY after a
-    // verified-complete seed in batchInsertProducts. This avoids the previous
-    // "if any ACIS row exists, assume we're done" bug that left partial seeds
-    // (e.g. from the old per-row insert loop dying on mobile Safari) wedged
-    // in the DB forever.
+    // Check the schema_version marker first
     let alreadySeeded = false;
     try {
       alreadySeeded = await this.db.isFullySeeded();
@@ -41,6 +37,26 @@ export class SeedDataService {
       return { success: true, productCount: existingCount };
     }
 
+    // If products already exist but the marker is missing (e.g. seed ran on web
+    // but the marker wasn't written, or a previous native insert failed after
+    // inserting data), just stamp the marker and return success.
+    let existingAcisCount = 0;
+    try {
+      const countResult = await this.db.query<{ count: number }>("SELECT COUNT(*) as count FROM products WHERE source = 'ACIS'");
+      existingAcisCount = countResult[0]?.count ?? 0;
+    } catch {}
+
+    if (existingAcisCount > 1000) {
+      console.log(`[seed] Found ${existingAcisCount} existing ACIS products — stamping marker and skipping re-seed`);
+      try {
+        await this.db.setMeta('schema_version', String(this.db.currentDbVersion));
+        await this.db.rebuildFtsIfAvailable();
+      } catch (e) {
+        console.warn('[seed] failed to stamp marker on existing data:', e);
+      }
+      return { success: true, productCount: existingAcisCount };
+    }
+
     const result = await this.loadSeedProducts();
     if (!result.success) {
       this.lastError = result.error!;
@@ -49,7 +65,7 @@ export class SeedDataService {
     }
 
     if (result.productCount === 0) {
-      return { success: true, productCount: 0 }; // no products to seed — empty catalog
+      return { success: true, productCount: 0 };
     }
 
     try {

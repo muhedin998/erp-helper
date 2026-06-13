@@ -87,10 +87,10 @@ export const ShoppingListStore = signalStore(
       await this.loadHistory();
     },
 
-    async cloneList(sourceId: string): Promise<ShoppingList> {
+    async cloneList(sourceId: string, customName?: string): Promise<ShoppingList> {
       const source = await db.getShoppingList(sourceId);
       if (!source) throw new Error('Source list not found');
-      const newName = `${source.naziv} (kopija)`;
+      const newName = customName || `${source.naziv} (kopija)`;
       const list = await db.cloneShoppingList(sourceId, newName);
       await this.loadAllLists();
       await this.loadHistory();
@@ -113,10 +113,10 @@ export const ShoppingListStore = signalStore(
       await this.setActiveList(list.id);
     },
 
-    async addItemToActiveList(productId: number, quantity: number = 1): Promise<void> {
+    async addItemToActiveList(productId: number, quantity: number = 1, scannedCode: string = ''): Promise<void> {
       const list = store.activeList();
       if (!list) return;
-      await db.addItemToList(list.id, productId, quantity);
+      await db.addItemToList(list.id, productId, quantity, scannedCode);
       await this.setActiveList(list.id);
     },
 

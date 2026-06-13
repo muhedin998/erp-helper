@@ -63,3 +63,12 @@ ion-content {
     color: #E5E7EB;
   }
 }
+
+// Reuse button
+.reuse-button {
+  --border-radius: 14px;
+  --border-width: 2px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin: 4px 12px;
+}

@@ -10,7 +10,7 @@ export class DatabaseService {
   private dbName = 'offline_inventory';
   private initialized = false;
   private fts5Available = true;
-  private readonly DB_VERSION = 2;
+  private readonly DB_VERSION = 3;
 
   async init(): Promise<void> {
     if (this.initialized) return;
@@ -24,10 +24,20 @@ export class DatabaseService {
     }
 
     try {
-      await CapacitorSQLite.createConnection({ database: this.dbName, readonly: false });
+      await CapacitorSQLite.createConnection({
+        database: this.dbName,
+        encrypted: false,
+        mode: 'no-encryption',
+        readonly: false,
+      });
     } catch (e: any) {
-      console.error('createConnection failed:', e?.message || e);
-      throw e;
+      // On reconnect, connection may already exist — that's OK
+      if (e?.message?.includes('already exists')) {
+        console.warn('createConnection: connection already exists, reusing');
+      } else {
+        console.error('createConnection failed:', e?.message || e);
+        throw e;
+      }
     }
 
     try {
@@ -46,17 +56,20 @@ export class DatabaseService {
   }
 
   private async checkVersion(): Promise<void> {
-    // No work to do here anymore. Seed completeness is now tracked exclusively
-    // by db_meta.schema_version, which is written only after batchInsertProducts
-    // verifies a full seed. seedIfEmpty() consults isFullySeeded() to decide
-    // whether to (re)seed, and batchInsertProducts uses INSERT OR REPLACE so it
-    // heals stale rows without needing a destructive wipe here.
-    //
-    // We intentionally do NOT delete anything in this method: in a previous
-    // iteration we wiped ACIS products whenever schema_version was missing,
-    // which on mobile Safari + jeep-sqlite could leave the user with an empty
-    // catalog if the subsequent seed insert failed silently.
-    return;
+    const recorded = Number(await this.getMeta('schema_version')) || 0;
+    if (recorded >= 2 && recorded < 3) {
+      try {
+        await CapacitorSQLite.execute({
+          database: this.dbName,
+          statements: `ALTER TABLE shopping_list_items ADD COLUMN scannedCode TEXT DEFAULT '';`,
+        });
+        console.log('[db] migrated shopping_list_items to v3 (added scannedCode)');
+      } catch (e: any) {
+        if (!e?.message?.includes('duplicate column')) {
+          console.warn('[db] v3 migration skipped:', e?.message || e);
+        }
+      }
+    }
   }
 
   async getMeta(key: string): Promise<string | null> {
@@ -121,6 +134,7 @@ export class DatabaseService {
           quantity INTEGER NOT NULL DEFAULT 1,
           purchasedQuantity INTEGER NOT NULL DEFAULT 0,
           checked INTEGER NOT NULL DEFAULT 0,
+          scannedCode TEXT DEFAULT '',
           FOREIGN KEY (listId) REFERENCES shopping_lists(id) ON DELETE CASCADE,
           FOREIGN KEY (productId) REFERENCES products(id)
         );
@@ -167,21 +181,12 @@ export class DatabaseService {
     const total = products.length;
     if (total === 0) return;
 
-    // Use executeSet so each chunk is sent over the bridge ONCE and runs as a
-    // single SQL transaction. This is the critical correctness fix: the previous
-    // per-row await CapacitorSQLite.run loop did 47k postMessage round-trips on
-    // mobile Safari/jeep-sqlite, which routinely got killed half-way (tab
-    // backgrounded, memory pressure, etc.) and left the catalog partially seeded.
-    // A transactional batch is also ~100× faster.
-    //
-    // INSERT OR REPLACE makes the operation idempotent — re-seeding an existing
-    // partial DB heals any stale rows (e.g. wrong barcode from older v1 seed)
-    // without needing a preceding DELETE.
     const CHUNK_SIZE = 500;
     const stmt = `INSERT OR REPLACE INTO products (id, sifra, barcode, naziv, cena, grupa, jedinicaMere, source, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     let insertedTotal = 0;
     const chunkCount = Math.ceil(total / CHUNK_SIZE);
+    const isNative = Capacitor.isNativePlatform();
 
     for (let i = 0; i < total; i += CHUNK_SIZE) {
       const chunk = products.slice(i, i + CHUNK_SIZE);
@@ -203,7 +208,21 @@ export class DatabaseService {
         insertedTotal += ret?.changes?.changes ?? 0;
       } catch (e: any) {
         console.error(`[seed] executeSet chunk ${i / CHUNK_SIZE + 1}/${chunkCount} failed:`, e?.message || e);
-        throw e;
+        if (!isNative) throw e;
+        // On native, fall back to individual run() calls for this chunk
+        console.log(`[seed] falling back to per-row insert for chunk ${i / CHUNK_SIZE + 1}`);
+        for (const item of set) {
+          try {
+            await CapacitorSQLite.run({
+              database: this.dbName,
+              statement: item.statement,
+              values: item.values,
+            });
+            insertedTotal++;
+          } catch (rowErr: any) {
+            console.warn(`[seed] row insert failed (id=${item.values[0]}):`, rowErr?.message);
+          }
+        }
       }
       onProgress?.(Math.min(i + CHUNK_SIZE, total), total);
       console.log(`[seed] chunk ${i / CHUNK_SIZE + 1}/${chunkCount} done (running total inserted=${insertedTotal})`);
@@ -274,7 +293,12 @@ export class DatabaseService {
   async query<T>(statement: string, values: any[] = []): Promise<T[]> {
     await this.ensureInit();
     const ret: capSQLiteValues = await CapacitorSQLite.query({ database: this.dbName, statement, values });
-    return (ret.values ?? []) as T[];
+    let rows = ret.values ?? [];
+    // iOS native plugin returns column metadata as the first element
+    if (rows.length > 0 && (rows[0] as any)?.ios_columns) {
+      rows = rows.slice(1);
+    }
+    return rows as T[];
   }
 
   async executeSQL(sql: string): Promise<void> {
@@ -514,16 +538,18 @@ export class DatabaseService {
     return results.length ? results[0] : null;
   }
 
-  async addItemToList(listId: string, productId: number, quantity: number = 1): Promise<void> {
+  async addItemToList(listId: string, productId: number, quantity: number = 1, scannedCode: string = ''): Promise<void> {
     const existing = await this.findItemInList(listId, productId);
     if (existing) {
-      await this.run('UPDATE shopping_list_items SET quantity = ? WHERE id = ?', [existing.quantity + quantity, existing.id]);
+      const newQty = existing.quantity + quantity;
+      const code = scannedCode || existing.scannedCode;
+      await this.run('UPDATE shopping_list_items SET quantity = ?, scannedCode = ? WHERE id = ?', [newQty, code, existing.id]);
       return;
     }
     const id = uuidv4();
     await this.run(
-      'INSERT INTO shopping_list_items (id, listId, productId, quantity, purchasedQuantity, checked) VALUES (?, ?, ?, ?, 0, 0)',
-      [id, listId, productId, quantity]
+      'INSERT INTO shopping_list_items (id, listId, productId, quantity, purchasedQuantity, checked, scannedCode) VALUES (?, ?, ?, ?, 0, 0, ?)',
+      [id, listId, productId, quantity, scannedCode]
     );
   }
 

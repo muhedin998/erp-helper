@@ -3,17 +3,18 @@
     <ion-buttons slot="start">
       <ion-back-button icon="chevron-back"></ion-back-button>
     </ion-buttons>
-    <ion-title>Kupovina</ion-title>
+    <ion-title>{{ store.activeList()?.naziv || 'Kupovina' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <!-- Store header -->
-  <div class="progress-section slide-in" *ngIf="store.activeList()">
-    <h2>{{ store.activeList()?.naziv }}</h2>
-    <div class="progress-percent">{{ store.purchaseProgress() }}%</div>
-    <p>{{ store.checkedCount() }} od {{ store.itemCount() }} artikala</p>
-    <ion-progress-bar [value]="store.purchaseProgress() / 100" color="primary" class="progress-bar"></ion-progress-bar>
+  <!-- Compact progress bar -->
+  <div class="purchase-progress-bar" *ngIf="store.activeList()">
+    <div class="progress-stats">
+      <span class="progress-label">{{ store.checkedCount() }}/{{ store.itemCount() }}</span>
+      <span class="progress-pct">{{ store.purchaseProgress() }}%</span>
+    </div>
+    <ion-progress-bar [value]="store.purchaseProgress() / 100" [color]="store.purchaseProgress() === 100 ? 'success' : 'primary'"></ion-progress-bar>
   </div>
 
   <!-- Items -->
@@ -46,12 +47,12 @@
   </div>
 </ion-content>
 
-<!-- Footer when 100% completed -->
-<ion-footer class="ion-no-border" *ngIf="store.purchaseProgress() === 100">
+<!-- Footer — always visible when there are items -->
+<ion-footer class="ion-no-border" *ngIf="store.items().length > 0">
   <ion-toolbar>
-    <ion-button expand="block" (click)="finishPurchase()" class="pill-button" color="secondary">
+    <ion-button expand="block" (click)="finishPurchase()" class="pill-button" [color]="store.purchaseProgress() === 100 ? 'success' : 'secondary'">
       <ion-icon slot="start" name="checkmark-done-outline"></ion-icon>
-      Završi kupovinu
+      Završi kupovinu ({{ store.purchaseProgress() }}%)
     </ion-button>
   </ion-toolbar>
 </ion-footer>

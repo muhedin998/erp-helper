@@ -1,9 +1,35 @@
 // ===== Purchase Mode Page =====
 
-.progress-bar {
-  height: 8px;
+// Compact progress bar at top
+.purchase-progress-bar {
+  padding: 10px 16px 8px;
+  background: #F3F4F6;
+  margin: 8px 12px;
+  border-radius: 14px;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6B7280;
+}
+
+.progress-pct {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #8B5CF6;
+}
+
+ion-progress-bar {
+  height: 6px;
   border-radius: 9999px;
-  margin-top: 8px;
 }
 
 .purchase-items {
@@ -108,5 +134,17 @@
 
   .purchase-info h3 {
     color: #E5E7EB;
+  }
+
+  .purchase-progress-bar {
+    background: #1F2937;
+  }
+
+  .progress-label {
+    color: #9CA3AF;
+  }
+
+  .progress-pct {
+    color: #A78BFA;
   }
 }

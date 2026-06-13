@@ -5,6 +5,9 @@
     </ion-buttons>
     <ion-title>{{ store.activeList()?.naziv || 'Lista' }}</ion-title>
     <ion-buttons slot="end">
+      <ion-button *ngIf="!store.isDraft()" (click)="reuseList()">
+        <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+      </ion-button>
       <ion-button *ngIf="store.isDraft()" (click)="addNote()">
         <ion-icon slot="icon-only" name="document-text-outline"></ion-icon>
       </ion-button>
@@ -51,12 +54,12 @@
           </ion-button>
         </ion-col>
         <ion-col size="3">
-          <ion-button expand="block" (click)="showManualEntry = !showManualEntry" fill="outline" class="pill-button">
+          <ion-button expand="block" (click)="toggleManualEntry()" fill="outline" class="pill-button" [color]="showManualEntry ? 'primary' : undefined">
             <ion-icon slot="icon-only" name="keypad-outline"></ion-icon>
           </ion-button>
         </ion-col>
         <ion-col size="3">
-          <ion-button expand="block" (click)="searchAndAdd()" fill="outline" class="pill-button">
+          <ion-button expand="block" (click)="toggleSearch()" fill="outline" class="pill-button" [color]="showSearch ? 'primary' : undefined">
             <ion-icon slot="icon-only" name="search-outline"></ion-icon>
           </ion-button>
         </ion-col>
@@ -76,26 +79,55 @@
         </ion-button>
       </div>
     </div>
+
+    <!-- Inline search with dropdown -->
+    <div *ngIf="showSearch" class="search-section slide-in">
+      <div class="search-input-box">
+        <ion-icon name="search-outline" class="search-icon"></ion-icon>
+        <ion-input
+          [value]="searchQuery"
+          (ionInput)="onSearchInput($any($event).detail.value || '')"
+          placeholder="Naziv, šifra ili barkod..."
+          class="search-input"
+          [debounce]="0"
+          autofocus
+        ></ion-input>
+        <ion-button *ngIf="searchQuery" fill="clear" size="small" (click)="onSearchInput('')" class="search-clear">
+          <ion-icon slot="icon-only" name="close-circle" color="medium"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="search-results" *ngIf="searchResults.length > 0">
+        <div class="search-result-item" *ngFor="let product of searchResults" (click)="selectProduct(product)" tappable>
+          <div class="result-info">
+            <span class="result-name">{{ product.naziv }}</span>
+            <span class="result-meta">{{ product.sifra }} <span *ngIf="product.barcode">· {{ product.barcode }}</span></span>
+          </div>
+          <ion-icon name="add-circle-outline" color="primary" class="result-add-icon"></ion-icon>
+        </div>
+      </div>
+
+      <div class="search-empty" *ngIf="searchQuery.trim().length > 0 && searchResults.length === 0">
+        <span>Nema rezultata za "{{ searchQuery }}"</span>
+      </div>
+    </div>
   </div>
 
   <!-- Items list -->
   <div class="items-section">
     <div class="item-card" *ngFor="let item of store.items()" tappable>
-      <div class="item-card-left">
-        <div class="item-qty">
+      <div class="item-card-left" (click)="store.isDraft() ? editItem(item) : null" [class.tappable]="store.isDraft()">
+        <div class="item-qty" [class.editable]="store.isDraft()">
           <span class="qty-number">{{ item.quantity }}</span>
           <span class="qty-label">kom</span>
         </div>
       </div>
       <div class="item-card-center">
         <h3>{{ item.naziv }}</h3>
-        <p>Šifra: {{ item.sifra }} <span *ngIf="item.barcode">| Barkod: {{ item.barcode }}</span></p>
+        <p>Šifra: {{ item.sifra }} <span *ngIf="item.scannedCode || item.barcode">| Barkod: {{ item.scannedCode || item.barcode }}</span></p>
         <p *ngIf="item.cena">{{ item.cena | number:'1.2-2' }} RSD</p>
       </div>
       <div class="item-card-right" *ngIf="store.isDraft()">
-        <ion-button fill="clear" size="small" (click)="editItem(item)">
-          <ion-icon slot="icon-only" name="create-outline" color="primary"></ion-icon>
-        </ion-button>
         <ion-button fill="clear" size="small" (click)="removeItem(item)">
           <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
         </ion-button>

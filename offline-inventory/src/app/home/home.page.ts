@@ -49,16 +49,41 @@ export class HomePage implements OnInit {
         this.catalogError = 'Katalog je prazan — nijedan artikal nije učitan.';
         this.catalogErrorDetails = '';
       } else {
-        this.catalogEmpty = true;
-        this.catalogError = result.error || 'Katalog nije učitan.';
-        this.catalogErrorDetails = result.errorDetails || '';
-        console.error('Catalog seeding failed:', result.error, result.errorDetails);
+        // Seed reported failure, but check if products exist anyway
+        let existingCount = 0;
+        try {
+          const countResult = await this.db.query<{ count: number }>('SELECT COUNT(*) as count FROM products');
+          existingCount = countResult[0]?.count ?? 0;
+        } catch {}
+
+        if (existingCount > 0) {
+          this.catalogEmpty = false;
+          this.catalogProductCount = existingCount;
+          console.warn('Seed reported failure but', existingCount, 'products exist in DB');
+        } else {
+          this.catalogEmpty = true;
+          this.catalogError = result.error || 'Katalog nije učitan.';
+          this.catalogErrorDetails = result.errorDetails || '';
+          console.error('Catalog seeding failed:', result.error, result.errorDetails);
+        }
       }
     } catch (e: any) {
       console.error('Seed failed:', e);
-      this.catalogEmpty = true;
-      this.catalogError = 'Greška pri pripremi kataloga.';
-      this.catalogErrorDetails = e?.message || String(e);
+      // Check if products exist despite the error
+      let existingCount = 0;
+      try {
+        const countResult = await this.db.query<{ count: number }>('SELECT COUNT(*) as count FROM products');
+        existingCount = countResult[0]?.count ?? 0;
+      } catch {}
+
+      if (existingCount > 0) {
+        this.catalogEmpty = false;
+        this.catalogProductCount = existingCount;
+      } else {
+        this.catalogEmpty = true;
+        this.catalogError = 'Greška pri pripremi kataloga.';
+        this.catalogErrorDetails = e?.message || String(e);
+      }
     } finally {
       await loading.dismiss();
     }
@@ -72,11 +97,14 @@ export class HomePage implements OnInit {
 
   async createNewList() {
     try {
+      const now = new Date();
+      const defaultName = now.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'long', year: 'numeric' });
+
       const alert = await this.alertCtrl.create({
         header: 'Nova lista',
         message: 'Unesite naziv nove liste za dopunu.',
         inputs: [
-          { name: 'naziv', type: 'text', placeholder: 'Naziv liste' },
+          { name: 'naziv', type: 'text', placeholder: 'Naziv liste', value: defaultName },
         ],
         buttons: [
           { text: 'Odustani', role: 'cancel' },

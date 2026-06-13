@@ -14,6 +14,7 @@ export interface ShoppingListItem {
   quantity: number;
   purchasedQuantity: number;
   checked: boolean;
+  scannedCode: string;
 }
 
 export interface ShoppingListItemView {
@@ -27,4 +28,5 @@ export interface ShoppingListItemView {
   quantity: number;
   purchasedQuantity: number;
   checked: boolean;
+  scannedCode: string;
 }

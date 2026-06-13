@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { ShoppingListStore } from '../../stores/shopping-list.store';
 
 @Component({
@@ -12,6 +13,7 @@ import { ShoppingListStore } from '../../stores/shopping-list.store';
 export class PurchaseModePage implements OnInit {
   route = inject(ActivatedRoute);
   store = inject(ShoppingListStore);
+  router = inject(Router);
   listId = '';
 
   constructor(private alertCtrl: AlertController) {}
@@ -56,15 +58,23 @@ export class PurchaseModePage implements OnInit {
   }
 
   async finishPurchase() {
+    const progress = this.store.purchaseProgress();
+    const checked = this.store.checkedCount();
+    const total = this.store.itemCount();
+    const message = progress === 100
+      ? 'Svi artikli su kupljeni. Završiti kupovinu?'
+      : `Kupljeno ${checked} od ${total} artikala (${progress}%). Završiti kupovinu?`;
+
     const alert = await this.alertCtrl.create({
       header: 'Završi kupovinu',
-      message: 'Lista će biti označena kao kupljena.',
+      message,
       buttons: [
         { text: 'Odustani', role: 'cancel' },
         {
           text: 'Završi',
           handler: async () => {
             await this.store.markAsPurchased();
+            this.router.navigate(['/list-detail', this.listId], { replaceUrl: true });
           },
         },
       ],

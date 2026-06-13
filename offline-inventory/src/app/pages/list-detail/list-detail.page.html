@@ -61,3 +61,13 @@
     <h3>Lista je prazna</h3>
   </div>
 </ion-content>
+
+<!-- Reuse footer -->
+<ion-footer class="ion-no-border" *ngIf="store.items().length > 0">
+  <ion-toolbar>
+    <ion-button expand="block" (click)="reuseList()" class="pill-button reuse-button" fill="outline" color="primary">
+      <ion-icon slot="start" name="copy-outline"></ion-icon>
+      Ponovo koristi listu
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>
