@@ -5,6 +5,8 @@ import * as pako from 'pako';
 export interface SyncResult {
   success: boolean;
   productCount: number;
+  isDelta?: boolean;
+  deactivatedCount?: number;
   error?: string;
   errorDetails?: string;
 }
@@ -14,6 +16,7 @@ export class SyncService {
   private db = inject(DatabaseService);
 
   private readonly SERVER_URL_KEY = 'sync_server_url';
+  private readonly LAST_SYNC_KEY = 'sync_last_at';
 
   /** Get the saved sync server URL from db_meta. */
   async getServerUrl(): Promise<string> {
@@ -23,6 +26,16 @@ export class SyncService {
   /** Save the sync server URL to db_meta. */
   async setServerUrl(url: string): Promise<void> {
     await this.db.setMeta(this.SERVER_URL_KEY, url.replace(/\/+$/, ''));
+  }
+
+  /** Get the timestamp of the last successful sync (ISO string). */
+  async getLastSyncAt(): Promise<string> {
+    return (await this.db.getMeta(this.LAST_SYNC_KEY)) || '';
+  }
+
+  /** Save the timestamp of the last successful sync. */
+  async setLastSyncAt(iso: string): Promise<void> {
+    await this.db.setMeta(this.LAST_SYNC_KEY, iso);
   }
 
   /** Quick health check — pings the server and returns status + product count. */
@@ -44,38 +57,38 @@ export class SyncService {
   }
 
   /**
-   * Full product sync from the REST server.
+   * Sync products from the REST server.
+   *
+   * - First sync (no lastSyncAt): full download (wipe + insert all).
+   * - Subsequent syncs: delta download (only changed products since last sync).
    *
    * Pipeline:
-   * 1. GET /api/sync/products/count → total estimate for progress
-   * 2. GET /api/sync/products → gzipped compact JSON
-   * 3. pako.inflate → JSON.parse → map to Product objects
-   * 4. Wipe existing ACIS products + batch insert
+   * 1. GET /api/sync/products[?since=TIMESTAMP] → gzipped compact JSON
+   * 2. pako.inflate → JSON.parse → map to Product objects
+   * 3. Upsert into local DB (INSERT OR REPLACE)
+   * 4. Handle deactivated products (DELETE by IDs)
+   * 5. Save new lastSyncAt from X-Server-Time header
    */
   async syncProducts(
     url: string,
     onProgress?: (done: number, total: number) => void,
   ): Promise<SyncResult> {
     const baseUrl = url.replace(/\/+$/, '');
+    const lastSyncAt = await this.getLastSyncAt();
+    const isDelta = !!lastSyncAt;
 
-    // ── Step 1: Get count for progress estimation ──────────────────────
-    let totalCount = 0;
-    try {
-      const countResp = await fetch(`${baseUrl}/api/sync/products/count`);
-      if (countResp.ok) {
-        const countData = await countResp.json();
-        totalCount = countData.count || 0;
-      }
-    } catch {
-      // non-critical — we'll show indeterminate progress
+    // ── Build URL ──────────────────────────────────────────────────────
+    let fetchUrl = `${baseUrl}/api/sync/products`;
+    if (isDelta) {
+      fetchUrl += `?since=${encodeURIComponent(lastSyncAt)}`;
     }
 
-    onProgress?.(0, totalCount || 100);
+    // ── Step 1: Download gzipped products ─────────────────────────────
+    onProgress?.(0, 1);
 
-    // ── Step 2: Download gzipped products ─────────────────────────────
     let response: Response;
     try {
-      response = await fetch(`${baseUrl}/api/sync/products`);
+      response = await fetch(fetchUrl);
       if (!response.ok) {
         return {
           success: false,
@@ -93,10 +106,7 @@ export class SyncService {
       };
     }
 
-    // Report ~10% progress — download finished
-    onProgress?.(Math.round((totalCount || 47500) * 0.1), totalCount || 47500);
-
-    // ── Step 3: Read response body ────────────────────────────────────
+    // ── Step 2: Read response body ────────────────────────────────────
     let compressed: Uint8Array;
     try {
       const buffer = await response.arrayBuffer();
@@ -110,7 +120,7 @@ export class SyncService {
       };
     }
 
-    // ── Step 4: Decompress gzip ───────────────────────────────────────
+    // ── Step 3: Decompress gzip ───────────────────────────────────────
     let json: string;
     try {
       json = pako.inflate(compressed, { to: 'string' }) as string;
@@ -123,7 +133,7 @@ export class SyncService {
       };
     }
 
-    // ── Step 5: Parse compact JSON ────────────────────────────────────
+    // ── Step 4: Parse compact JSON ────────────────────────────────────
     interface CompactProduct {
       id: number;
       s: string;
@@ -150,11 +160,7 @@ export class SyncService {
       };
     }
 
-    if (!rawProducts.length) {
-      return { success: false, productCount: 0, error: 'Server je vratio prazan katalog' };
-    }
-
-    // ── Step 6: Map to full Product objects ───────────────────────────
+    // ── Step 5: Map to Product objects ────────────────────────────────
     const products = rawProducts.map(p => ({
       id: p.id,
       sifra: p.s || '',
@@ -169,17 +175,34 @@ export class SyncService {
       updatedAt: p.ua || '2000-01-01T00:00:00.000000',
     }));
 
-    // ── Step 7: Wipe existing ACIS and batch insert ───────────────────
+    // ── Step 6: Parse deactivated IDs ─────────────────────────────────
+    const deactivatedHeader = response.headers.get('X-Deactivated-IDs');
+    const deactivatedIds: number[] = deactivatedHeader
+      ? deactivatedHeader.split(',').map(Number).filter(n => n > 0)
+      : [];
+
+    // ── Step 7: Write to database ─────────────────────────────────────
     try {
-      await this.db.deleteAllAcProducts();
+      if (isDelta) {
+        // Delta: upsert changed products (INSERT OR REPLACE), delete deactivated
+        if (products.length > 0) {
+          await this.db.batchInsertProducts(products, (done, total) => {
+            onProgress?.(done, total);
+          });
+        }
+        if (deactivatedIds.length > 0) {
+          await this.db.deleteProductsByIds(deactivatedIds);
+        }
+      } else {
+        // Full sync: wipe all ACIS and re-insert
+        await this.db.deleteAllAcProducts();
 
-      const syncProgress = (done: number, total: number) => {
-        // First 10% was download, remaining 90% is insert
-        const pct = 10 + Math.round((done / total) * 90);
-        onProgress?.(Math.round((pct / 100) * (totalCount || products.length)), totalCount || products.length);
-      };
+        const syncProgress = (done: number, total: number) => {
+          onProgress?.(done, total);
+        };
 
-      await this.db.batchInsertProducts(products, syncProgress);
+        await this.db.batchInsertProducts(products, syncProgress);
+      }
     } catch (e: any) {
       return {
         success: false,
@@ -189,7 +212,18 @@ export class SyncService {
       };
     }
 
-    onProgress?.(totalCount || products.length, totalCount || products.length);
-    return { success: true, productCount: products.length };
+    // ── Step 8: Save lastSyncAt ───────────────────────────────────────
+    const serverTime = response.headers.get('X-Server-Time');
+    if (serverTime) {
+      await this.setLastSyncAt(serverTime);
+    }
+
+    onProgress?.(products.length, products.length);
+    return {
+      success: true,
+      productCount: products.length,
+      isDelta,
+      deactivatedCount: deactivatedIds.length,
+    };
   }
 }

@@ -180,8 +180,17 @@ export class SettingsPage {
       await this.refreshStats();
 
       if (result.success) {
+        let msg = '';
+        if (result.isDelta) {
+          msg = `Ažurirano ${result.productCount} artikala`;
+          if (result.deactivatedCount && result.deactivatedCount > 0) {
+            msg += ` (${result.deactivatedCount} uklonjeno)`;
+          }
+        } else {
+          msg = `Sinhronizovano ${result.productCount} artikala`;
+        }
         const toast = await this.toastCtrl.create({
-          message: `Sinhronizovano ${result.productCount} artikala`,
+          message: msg,
           duration: 3000,
           color: 'success',
         });

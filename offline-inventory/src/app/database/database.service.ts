@@ -470,6 +470,14 @@ export class DatabaseService {
     await this.executeSQL("DELETE FROM products WHERE source = 'ACIS'");
   }
 
+  /** Delete products by their IDs (used for delta sync deactivations). */
+  async deleteProductsByIds(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    // IDs come from our own server, safe to interpolate as integers
+    await this.executeSQL(`DELETE FROM products WHERE id IN (${ids.join(',')})`);
+    console.log(`[db] Deleted ${ids.length} deactivated products`);
+  }
+
   async createShoppingList(naziv: string): Promise<ShoppingList> {
     const id = uuidv4();
     const now = new Date().toISOString();
