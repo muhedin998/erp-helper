@@ -131,8 +131,17 @@ export class SyncService {
     try {
       json = pako.inflate(compressed, { to: 'string' }) as string;
       console.log(`[sync] Decompressed: ${(json.length / 1024 / 1024).toFixed(1)} MB JSON`);
-    } catch (e: any) {
-      return { success: false, productCount: 0, error: 'Greška pri dekompresiji', errorDetails: e?.message || String(e) };
+    } catch (gzErr: any) {
+      // Platform (iOS/Android WebView) may have already decompressed the body
+      console.warn(`[sync] gzip decompress failed, trying as plain text: ${gzErr?.message || gzErr}`);
+      try {
+        json = new TextDecoder().decode(compressed);
+        // Validate it's actually JSON
+        JSON.parse(json);
+        console.log(`[sync] Using platform-decompressed body: ${(json.length / 1024 / 1024).toFixed(1)} MB`);
+      } catch {
+        return { success: false, productCount: 0, error: 'Greška pri dekompresiji', errorDetails: gzErr?.message || String(gzErr) };
+      }
     }
 
     // ── 5. Parse JSON ────────────────────────────────────────────────
