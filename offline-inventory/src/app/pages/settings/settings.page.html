@@ -83,11 +83,12 @@
         <ion-button expand="block" (click)="saveServerUrl()" color="medium" size="small">
           Sačuvaj adresu
         </ion-button>
-        <ion-button expand="block" (click)="startSync()" [disabled]="!serverUrl || syncing" color="primary">
+        <ion-button expand="block" (click)="startSync()" [disabled]="(!serverUrl && !serverUrlInput.trim()) || syncing" color="primary">
           {{ syncing ? 'Sinhronizacija...' : 'Pokreni sinhronizaciju' }}
         </ion-button>
       </div>
       <div class="sync-progress" *ngIf="syncing">
+        <p class="progress-stage" *ngIf="syncStage">{{ syncStage }}</p>
         <ion-progress-bar [value]="syncProgress / (syncTotal || 1)"></ion-progress-bar>
         <p class="progress-text">{{ syncProgress }} / {{ syncTotal || '?' }}</p>
       </div>

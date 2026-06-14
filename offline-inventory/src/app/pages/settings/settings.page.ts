@@ -27,6 +27,7 @@ export class SettingsPage {
   syncing = false;
   syncProgress = 0;
   syncTotal = 0;
+  syncStage = '';
 
   constructor(private alertCtrl: AlertController, private toastCtrl: ToastController, private loadingCtrl: LoadingController) {}
 
@@ -144,6 +145,11 @@ export class SettingsPage {
     this.connectionStatus = null;
     this.connectionStatus = await this.syncService.checkServer(url);
     this.testingConnection = false;
+    // Auto-save on success so the sync button enables immediately
+    if (this.connectionStatus?.ok) {
+      await this.syncService.setServerUrl(url);
+      this.serverUrl = url;
+    }
   }
 
   async saveServerUrl() {
@@ -160,7 +166,13 @@ export class SettingsPage {
   }
 
   async startSync() {
-    if (!this.serverUrl) return;
+    const url = this.serverUrl || this.serverUrlInput.trim();
+    if (!url) return;
+    // Auto-save if not already saved
+    if (!this.serverUrl) {
+      await this.syncService.setServerUrl(url);
+      this.serverUrl = url;
+    }
     this.syncing = true;
     this.syncProgress = 0;
     this.syncTotal = 0;
@@ -170,10 +182,11 @@ export class SettingsPage {
       await this.db.clearSeedMarker();
 
       const result = await this.syncService.syncProducts(
-        this.serverUrl,
-        (done, total) => {
+        url,
+        (done, total, stage) => {
           this.syncProgress = done;
           this.syncTotal = total;
+          this.syncStage = stage || '';
         },
       );
 
