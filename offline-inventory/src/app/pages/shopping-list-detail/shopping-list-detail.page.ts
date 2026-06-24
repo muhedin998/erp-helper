@@ -267,7 +267,7 @@ export class ShoppingListDetailPage implements OnInit {
 
     await this.exportService.generateShoppingPrintout(
       list.naziv,
-      items.map(i => ({ naziv: i.naziv, sifra: i.sifra, quantity: i.quantity, barcode: i.barcode })),
+      items.map(i => ({ naziv: i.naziv, sifra: i.sifra, quantity: i.quantity, barcode: i.barcode, cena: i.cena })),
       list.note || undefined
     );
   }

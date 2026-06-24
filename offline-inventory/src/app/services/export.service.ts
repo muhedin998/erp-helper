@@ -82,81 +82,116 @@ export class ExportService {
 
   async generateShoppingPrintout(
     title: string,
-    items: { naziv: string; sifra: string; quantity: number; barcode?: string }[],
+    items: { naziv: string; sifra: string; quantity: number; barcode?: string; cena?: number }[],
     note?: string
   ): Promise<void> {
     const doc = new jsPDF();
     const now = new Date();
     const dateStr = now.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'long', year: 'numeric' });
     const pageWidth = doc.internal.pageSize.getWidth();
+    const colGap = 6;
 
     // Purple header
     doc.setFillColor(109, 40, 217);
-    doc.rect(0, 0, pageWidth, 28, 'F');
+    doc.rect(0, 0, pageWidth, 24, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.text(this.lat(title), 14, 14);
-    doc.setFontSize(9);
-    doc.text(this.lat(dateStr), 14, 22);
+    doc.setFontSize(14);
+    doc.text(this.lat(title), 14, 12);
+    doc.setFontSize(8);
+    doc.text(this.lat(dateStr), 14, 19);
 
     const totalItems = items.length;
     const totalQty = items.reduce((s, i) => s + i.quantity, 0);
-    doc.text(`${totalItems} artikala | ${totalQty} komada`, pageWidth - 14, 22, { align: 'right' });
+    doc.text(`${totalItems} artikala | ${totalQty} komada`, pageWidth - 14, 19, { align: 'right' });
 
     doc.setTextColor(0, 0, 0);
-    let y = 34;
+    let startY = 29;
 
     if (note) {
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setTextColor(107, 114, 128);
       const lines = doc.splitTextToSize(this.lat(note), pageWidth - 28);
-      doc.text(lines, 14, y);
-      y += lines.length * 5 + 4;
+      doc.text(lines, 14, startY);
+      startY += lines.length * 4 + 3;
       doc.setTextColor(0, 0, 0);
     }
 
-    // Shopping list with checkbox column
-    const tableData = items.map(item => [
+    // Split items into two halves — left column fills first, then right column
+    const mid = Math.ceil(items.length / 2);
+    const leftItems = items.slice(0, mid);
+    const rightItems = items.slice(mid);
+
+    // Compact styles: smaller padding & font for tighter line spacing
+    const tableStyles: any = { fontSize: 7, cellPadding: 1.5, lineColor: [229, 231, 235] };
+    const headStyles: any = { fillColor: [109, 40, 217] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontStyle: 'bold', fontSize: 7 };
+    const altRowStyles: any = { fillColor: [245, 243, 255] as [number, number, number] };
+    const columnStyles: any = {
+      0: { halign: 'center' as const, cellWidth: 6 },
+      1: { halign: 'center' as const, cellWidth: 10, fontStyle: 'bold' as const },
+      2: { cellWidth: 'auto' as const },
+      3: { cellWidth: 18, fontSize: 6, textColor: [156, 163, 175] as [number, number, number] },
+      4: { halign: 'right' as const, cellWidth: 28, fontSize: 6 },
+    };
+
+    const makeCheckbox = (d: any) => {
+      if (d.section === 'body' && d.column.index === 0) {
+        const size = 3.5;
+        const cx = d.cell.x + (d.cell.width - size) / 2;
+        const cy = d.cell.y + (d.cell.height - size) / 2;
+        d.doc.setDrawColor(109, 40, 217);
+        d.doc.setLineWidth(0.3);
+        d.doc.rect(cx, cy, size, size);
+      }
+    };
+
+    const toRow = (item: typeof items[number]) => [
       '',
       String(item.quantity),
       this.lat(item.naziv),
       item.sifra,
-    ]);
+      item.cena != null ? this.lat(`${item.cena.toFixed(2)} RSD`) : '',
+    ];
 
+    // Left column
     autoTable(doc, {
-      head: [['', 'Kom', 'Naziv artikla', 'Sifra']],
-      body: tableData,
-      startY: y,
-      styles: { fontSize: 10, cellPadding: 4, lineColor: [229, 231, 235] },
-      headStyles: { fillColor: [109, 40, 217], textColor: [255, 255, 255], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [245, 243, 255] },
-      columnStyles: {
-        0: { halign: 'center', cellWidth: 10 },
-        1: { halign: 'center', cellWidth: 18, fontStyle: 'bold' },
-        2: { cellWidth: 'auto' },
-        3: { cellWidth: 30, fontSize: 8, textColor: [156, 163, 175] },
-      },
-      didDrawCell: (data: any) => {
-        // Draw checkbox squares in column 0 for body rows
-        if (data.section === 'body' && data.column.index === 0) {
-          const size = 5;
-          const cx = data.cell.x + (data.cell.width - size) / 2;
-          const cy = data.cell.y + (data.cell.height - size) / 2;
-          doc.setDrawColor(109, 40, 217);
-          doc.setLineWidth(0.4);
-          doc.rect(cx, cy, size, size);
-        }
-      },
+      head: [['', 'K', 'Naziv', 'Sifra', 'Cena']],
+      body: leftItems.map(toRow),
+      startY,
+      margin: { left: 10, right: pageWidth / 2 + colGap / 2 },
+      styles: tableStyles,
+      headStyles,
+      alternateRowStyles: altRowStyles,
+      columnStyles,
+      didDrawCell: makeCheckbox,
     });
+    const leftFinalY = (doc as any).lastAutoTable?.finalY ?? startY;
+
+    // Right column — starts at same Y, continues after left items end visually
+    autoTable(doc, {
+      head: [['', 'K', 'Naziv', 'Sifra', 'Cena']],
+      body: rightItems.map(toRow),
+      startY,
+      margin: { left: pageWidth / 2 + colGap / 2, right: 10 },
+      styles: tableStyles,
+      headStyles,
+      alternateRowStyles: altRowStyles,
+      columnStyles,
+      didDrawCell: makeCheckbox,
+    });
+    const rightFinalY = (doc as any).lastAutoTable?.finalY ?? startY;
+
+    const finalY = Math.max(leftFinalY, rightFinalY);
 
     // Footer
-    const finalY = (doc as any).lastAutoTable?.finalY ?? y;
     doc.setDrawColor(109, 40, 217);
     doc.setLineWidth(0.5);
-    doc.line(14, finalY + 6, pageWidth - 14, finalY + 6);
+    doc.line(14, finalY + 4, pageWidth - 14, finalY + 4);
     doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text(`Ukupno: ${totalItems} artikala, ${totalQty} komada`, 14, finalY + 9);
+    doc.setFontSize(7);
     doc.setTextColor(156, 163, 175);
-    doc.text('Offline Inventory', pageWidth - 14, finalY + 11, { align: 'right' });
+    doc.text('Offline Inventory', pageWidth - 14, finalY + 9, { align: 'right' });
 
     await this.outputPDF(doc, `Spisak_${title.replace(/\s+/g, '_')}`);
   }
