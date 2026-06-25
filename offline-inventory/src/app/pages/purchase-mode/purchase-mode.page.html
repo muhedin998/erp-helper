@@ -12,7 +12,8 @@
   <div class="purchase-progress-bar" *ngIf="store.activeList()">
     <div class="progress-stats">
       <span class="progress-label">{{ store.checkedCount() }}/{{ store.itemCount() }}</span>
-      <span class="progress-pct">{{ store.purchaseProgress() }}%</span>
+      <span class="progress-pct" *ngIf="store.totalPrice() === 0">{{ store.purchaseProgress() }}%</span>
+      <span class="progress-pct" *ngIf="store.totalPrice() > 0">{{ store.totalPrice() | number:'1.2-2' }} RSD</span>
     </div>
     <ion-progress-bar [value]="store.purchaseProgress() / 100" [color]="store.purchaseProgress() === 100 ? 'success' : 'primary'"></ion-progress-bar>
   </div>
@@ -26,15 +27,17 @@
         </div>
       </div>
       <div class="purchase-info">
-        <h3 [class.line-through]="item.checked">{{ item.naziv }}</h3>
-        <p class="purchase-qty" [class.line-through]="item.checked">
+        <div class="purchase-row-top">
+          <h3 [class.line-through]="item.checked">{{ item.naziv }}</h3>
+          <span class="purchase-qty-pill" *ngIf="!item.checked">{{ item.quantity }}</span>
+        </div>
+        <p class="purchase-meta" [class.line-through]="item.checked">
+          <span *ngIf="item.cena" class="purchase-price">{{ item.cena | number:'1.2-2' }} RSD</span>
+          <span *ngIf="item.cena"> · </span>
           <span>{{ item.quantity }} kom</span>
-          <span *ngIf="item.checked && item.purchasedQuantity > 0"> — Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></span>
-          <span *ngIf="item.checked && item.purchasedQuantity === 0"> — <em>bez kupovine</em></span>
+          <span *ngIf="item.checked && item.purchasedQuantity > 0"> · Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></span>
+          <span *ngIf="item.checked && item.purchasedQuantity === 0"> · <em>bez kupovine</em></span>
         </p>
-      </div>
-      <div class="purchase-qty-badge" *ngIf="!item.checked">
-        <span class="qty-num">{{ item.quantity }}</span>
       </div>
     </div>
   </div>

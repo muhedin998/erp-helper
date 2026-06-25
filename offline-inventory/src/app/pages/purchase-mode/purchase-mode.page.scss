@@ -2,10 +2,10 @@
 
 // Compact progress bar at top
 .purchase-progress-bar {
-  padding: 10px 16px 8px;
+  padding: 10px 14px 8px;
   background: #F3F4F6;
-  margin: 8px 12px;
-  border-radius: 14px;
+  margin: 8px 10px;
+  border-radius: 12px;
 }
 
 .progress-stats {
@@ -22,31 +22,31 @@
 }
 
 .progress-pct {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 800;
   color: #8B5CF6;
 }
 
 ion-progress-bar {
-  height: 6px;
+  height: 5px;
   border-radius: 9999px;
 }
 
 .purchase-items {
-  padding: 4px 12px 80px;
+  padding: 2px 10px 80px;
 }
 
 .purchase-item {
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  gap: 10px;
+  margin-bottom: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  transition: opacity 0.2s ease, transform 0.1s ease;
 }
 
 .purchase-item:active {
@@ -54,7 +54,7 @@ ion-progress-bar {
 }
 
 .purchase-item.checked {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .checkbox-col {
@@ -62,10 +62,10 @@ ion-progress-bar {
 }
 
 .custom-checkbox {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2.5px solid #D1D5DB;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid #D1D5DB;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,7 +78,7 @@ ion-progress-bar {
 
   ion-icon {
     color: #FFFFFF;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
   }
 }
@@ -86,45 +86,62 @@ ion-progress-bar {
 .purchase-info {
   flex: 1;
   min-width: 0;
+}
 
-  h3 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #1F2937;
-    margin: 0 0 2px;
+.purchase-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.purchase-row-top h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.purchase-qty-pill {
+  flex-shrink: 0;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #EDE9FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #5B21B6;
+}
+
+.purchase-meta {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  margin: 1px 0 0;
+
+  .purchase-price {
+    font-weight: 600;
+    color: #059669;
   }
 
-  .purchase-qty {
-    font-size: 0.8rem;
-    color: #9CA3AF;
-    margin: 0;
-
-    strong {
-      color: #8B5CF6;
-    }
+  strong {
+    color: #8B5CF6;
   }
 
-  .line-through {
+  &.line-through {
     text-decoration: line-through;
   }
 }
 
-.purchase-qty-badge {
-  flex-shrink: 0;
-}
-
-.qty-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 9999px;
-  background: #EDE9FE;
-  color: #5B21B6;
-  font-weight: 700;
-  font-size: 0.9rem;
+.line-through {
+  text-decoration: line-through;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -132,8 +149,16 @@ ion-progress-bar {
     background: #1F2937;
   }
 
-  .purchase-info h3 {
+  .purchase-row-top h3 {
     color: #E5E7EB;
+  }
+
+  .purchase-meta {
+    color: #6B7280;
+
+    .purchase-price {
+      color: #34D399;
+    }
   }
 
   .purchase-progress-bar {

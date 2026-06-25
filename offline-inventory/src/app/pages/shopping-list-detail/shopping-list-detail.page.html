@@ -36,6 +36,10 @@
         <span class="info-label">Komada</span>
         <span class="info-value">{{ store.totalQuantity() }}</span>
       </div>
+      <div class="info-item" *ngIf="store.totalPrice() > 0">
+        <span class="info-label">Ukupno</span>
+        <span class="info-value price">{{ store.totalPrice() | number:'1.2-2' }} RSD</span>
+      </div>
     </div>
     <p *ngIf="store.activeList()?.note" class="ion-padding-top note-text">
       <ion-icon name="chatbubble-ellipses-outline" style="vertical-align: middle; font-size: 14px;"></ion-icon>
@@ -116,16 +120,16 @@
   <!-- Items list -->
   <div class="items-section">
     <div class="item-card" *ngFor="let item of store.items()" tappable>
-      <div class="item-card-left" (click)="store.isDraft() ? editItem(item) : null" [class.tappable]="store.isDraft()">
-        <div class="item-qty" [class.editable]="store.isDraft()">
-          <span class="qty-number">{{ item.quantity }}</span>
-          <span class="qty-label">kom</span>
-        </div>
+      <div class="item-qty-pill" (click)="store.isDraft() ? editItem(item) : null" [class.editable]="store.isDraft()">
+        {{ item.quantity }}
       </div>
       <div class="item-card-center">
         <h3>{{ item.naziv }}</h3>
-        <p>Šifra: {{ item.sifra }} <span *ngIf="item.scannedCode || item.barcode">| Barkod: {{ item.scannedCode || item.barcode }}</span></p>
-        <p *ngIf="item.cena">{{ item.cena | number:'1.2-2' }} RSD</p>
+        <p class="item-meta">
+          <span>{{ item.sifra }}</span>
+          <span *ngIf="item.scannedCode || item.barcode"> · {{ item.scannedCode || item.barcode }}</span>
+          <span *ngIf="item.cena" class="item-price"> · {{ item.cena | number:'1.2-2' }} RSD</span>
+        </p>
       </div>
       <div class="item-card-right" *ngIf="store.isDraft()">
         <ion-button fill="clear" size="small" (click)="removeItem(item)">

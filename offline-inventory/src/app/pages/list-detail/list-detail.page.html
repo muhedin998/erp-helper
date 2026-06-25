@@ -29,6 +29,10 @@
         <span class="info-label">Artikala</span>
         <span class="info-value">{{ store.itemCount() }}</span>
       </div>
+      <div class="info-item" *ngIf="store.totalPrice() > 0">
+        <span class="info-label">Ukupno</span>
+        <span class="info-value price">{{ store.totalPrice() | number:'1.2-2' }} RSD</span>
+      </div>
       <div class="info-item" *ngIf="store.activeList()?.completedAt">
         <span class="info-label">Završeno</span>
         <span class="info-value date">{{ store.activeList()?.completedAt | date:'dd.MM.' }}</span>
@@ -41,16 +45,19 @@
   </div>
 
   <!-- Items -->
-  <div style="padding: 4px 0 80px;">
+  <div class="items-section">
     <div class="item-card" *ngFor="let item of store.items()">
-      <div class="item-qty-badge">
-        <span class="qty-num">{{ item.quantity }}</span>
+      <div class="item-qty-pill">
+        {{ item.quantity }}
       </div>
       <div class="item-detail-info">
         <h3>{{ item.naziv }}</h3>
-        <p>Šifra: {{ item.sifra }}</p>
-        <p *ngIf="item.purchasedQuantity > 0">Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></p>
-        <p *ngIf="item.purchasedQuantity === 0 && store.activeList()?.status === 'PURCHASED'"><em>Nije kupljeno</em></p>
+        <p class="item-meta">
+          <span>{{ item.sifra }}</span>
+          <span *ngIf="item.cena" class="item-price"> · {{ item.cena | number:'1.2-2' }} RSD</span>
+          <span *ngIf="item.purchasedQuantity > 0" class="item-purchased"> · Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></span>
+          <span *ngIf="item.purchasedQuantity === 0 && store.activeList()?.status === 'PURCHASED'" class="item-purchased"> · <em>Nije kupljeno</em></span>
+        </p>
       </div>
     </div>
   </div>

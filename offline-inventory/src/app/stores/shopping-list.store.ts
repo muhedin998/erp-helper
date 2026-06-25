@@ -25,6 +25,7 @@ export const ShoppingListStore = signalStore(
   withComputed(({ activeList, items }) => ({
     itemCount: computed(() => items().length),
     totalQuantity: computed(() => items().reduce((sum, i) => sum + i.quantity, 0)),
+    totalPrice: computed(() => items().reduce((sum, i) => sum + (i.cena ?? 0) * i.quantity, 0)),
     checkedCount: computed(() => items().filter(i => i.checked).length),
     purchaseProgress: computed(() => {
       const total = items().length;
