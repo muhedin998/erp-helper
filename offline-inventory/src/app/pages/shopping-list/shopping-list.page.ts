@@ -18,6 +18,7 @@ export class ShoppingListPage {
   }
 
   async createNewList() {
+    const defaultName = new Date().toLocaleDateString('sr-Latn', { day: 'numeric', month: 'long', year: 'numeric' });
     const alert = await this.alertCtrl.create({
       header: 'Nova lista',
       message: 'Unesite naziv nove liste za dopunu.',
@@ -26,6 +27,7 @@ export class ShoppingListPage {
           name: 'naziv',
           type: 'text',
           placeholder: 'Naziv liste',
+          value: defaultName,
         },
       ],
       buttons: [
