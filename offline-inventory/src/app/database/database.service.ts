@@ -187,7 +187,7 @@ export class DatabaseService {
     const stmt = `INSERT OR REPLACE INTO products (id, sifra, barcode, naziv, cena, grupa, jedinicaMere, source, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const chunkCount = Math.ceil(total / CHUNK_SIZE);
 
-    await CapacitorSQLite.execute({ database: this.dbName, statements: 'BEGIN;' });
+    await CapacitorSQLite.beginTransaction({ database: this.dbName });
     try {
       for (let i = 0; i < total; i += CHUNK_SIZE) {
         const chunk = products.slice(i, i + CHUNK_SIZE);
@@ -206,10 +206,10 @@ export class DatabaseService {
         onProgress?.(done, total);
         console.log(`[seed] chunk ${i / CHUNK_SIZE + 1}/${chunkCount} done (${done}/${total})`);
       }
-      await CapacitorSQLite.execute({ database: this.dbName, statements: 'COMMIT;' });
+      await CapacitorSQLite.commitTransaction({ database: this.dbName });
     } catch (e: any) {
       console.error('[seed] batch insert failed, rolling back:', e?.message || e);
-      try { await CapacitorSQLite.execute({ database: this.dbName, statements: 'ROLLBACK;' }); } catch {}
+      try { await CapacitorSQLite.rollbackTransaction({ database: this.dbName }); } catch {}
       throw e;
     }
 
