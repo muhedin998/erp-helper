@@ -181,51 +181,36 @@ export class DatabaseService {
     const total = products.length;
     if (total === 0) return;
 
-    const CHUNK_SIZE = 500;
+    // One transaction for the whole batch — many individual commits was causing
+    // the Capacitor bridge to stall on mobile (each commit is a round-trip).
+    const CHUNK_SIZE = 200;
     const stmt = `INSERT OR REPLACE INTO products (id, sifra, barcode, naziv, cena, grupa, jedinicaMere, source, active, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    let insertedTotal = 0;
     const chunkCount = Math.ceil(total / CHUNK_SIZE);
-    const isNative = Capacitor.isNativePlatform();
 
-    for (let i = 0; i < total; i += CHUNK_SIZE) {
-      const chunk = products.slice(i, i + CHUNK_SIZE);
-      const set = chunk.map(p => ({
-        statement: stmt,
-        values: [
-          p.id, p.sifra, p.barcode, p.naziv,
-          p.cena ?? null, p.grupa ?? null, p.jedinicaMere ?? null,
-          p.source, p.active ? 1 : 0, p.createdAt, p.updatedAt,
-        ],
-      }));
+    await CapacitorSQLite.execute({ database: this.dbName, statements: 'BEGIN;' });
+    try {
+      for (let i = 0; i < total; i += CHUNK_SIZE) {
+        const chunk = products.slice(i, i + CHUNK_SIZE);
+        const set = chunk.map(p => ({
+          statement: stmt,
+          values: [
+            p.id, p.sifra, p.barcode, p.naziv,
+            p.cena ?? null, p.grupa ?? null, p.jedinicaMere ?? null,
+            p.source, p.active ? 1 : 0, p.createdAt, p.updatedAt,
+          ],
+        }));
 
-      try {
-        const ret = await CapacitorSQLite.executeSet({
-          database: this.dbName,
-          set,
-          transaction: true,
-        });
-        insertedTotal += ret?.changes?.changes ?? 0;
-      } catch (e: any) {
-        console.error(`[seed] executeSet chunk ${i / CHUNK_SIZE + 1}/${chunkCount} failed:`, e?.message || e);
-        if (!isNative) throw e;
-        // On native, fall back to individual run() calls for this chunk
-        console.log(`[seed] falling back to per-row insert for chunk ${i / CHUNK_SIZE + 1}`);
-        for (const item of set) {
-          try {
-            await CapacitorSQLite.run({
-              database: this.dbName,
-              statement: item.statement,
-              values: item.values,
-            });
-            insertedTotal++;
-          } catch (rowErr: any) {
-            console.warn(`[seed] row insert failed (id=${item.values[0]}):`, rowErr?.message);
-          }
-        }
+        await CapacitorSQLite.executeSet({ database: this.dbName, set, transaction: false });
+
+        const done = Math.min(i + CHUNK_SIZE, total);
+        onProgress?.(done, total);
+        console.log(`[seed] chunk ${i / CHUNK_SIZE + 1}/${chunkCount} done (${done}/${total})`);
       }
-      onProgress?.(Math.min(i + CHUNK_SIZE, total), total);
-      console.log(`[seed] chunk ${i / CHUNK_SIZE + 1}/${chunkCount} done (running total inserted=${insertedTotal})`);
+      await CapacitorSQLite.execute({ database: this.dbName, statements: 'COMMIT;' });
+    } catch (e: any) {
+      console.error('[seed] batch insert failed, rolling back:', e?.message || e);
+      try { await CapacitorSQLite.execute({ database: this.dbName, statements: 'ROLLBACK;' }); } catch {}
+      throw e;
     }
 
     await this.persist();
