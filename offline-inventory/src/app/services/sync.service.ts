@@ -115,12 +115,34 @@ export class SyncService {
     console.log(`[sync] Download done in ${((tDownload - t0) / 1000).toFixed(1)}s, ${(contentLength / 1024).toFixed(0)} KB`);
 
     // ── 3. Read body ─────────────────────────────────────────────────
+    // Use ReadableStream reader instead of arrayBuffer() — iOS WKWebView can
+    // silently hang on arrayBuffer() with large chunked (streaming) responses.
     onProgress?.(Math.round((totalCount || 47000) * 0.05), totalCount || 47000, 'Čitanje...');
 
     let compressed: Uint8Array;
     try {
-      const buffer = await response.arrayBuffer();
-      compressed = new Uint8Array(buffer);
+      if (response.body) {
+        const reader = response.body.getReader();
+        const chunks: Uint8Array[] = [];
+        let totalBytes = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value?.length) {
+            chunks.push(value);
+            totalBytes += value.length;
+          }
+        }
+        compressed = new Uint8Array(totalBytes);
+        let offset = 0;
+        for (const chunk of chunks) {
+          compressed.set(chunk, offset);
+          offset += chunk.length;
+        }
+      } else {
+        // Fallback for platforms without ReadableStream body
+        compressed = new Uint8Array(await response.arrayBuffer());
+      }
       console.log(`[sync] Read ${(compressed.length / 1024).toFixed(0)} KB`);
     } catch (e: any) {
       return { success: false, productCount: 0, error: 'Greška pri preuzimanju', errorDetails: e?.message || String(e) };
