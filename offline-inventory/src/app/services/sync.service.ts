@@ -99,7 +99,9 @@ export class SyncService {
     let response: Response;
     try {
       console.log(`[sync] Downloading from ${fetchUrl}`);
-      response = await fetch(fetchUrl);
+      response = await fetch(fetchUrl, {
+        signal: AbortSignal.timeout(10 * 60 * 1000), // 10 min hard limit
+      });
       if (!response.ok) {
         return { success: false, productCount: 0, error: 'Greška servera', errorDetails: `HTTP ${response.status}` };
       }
