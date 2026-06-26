@@ -1,8 +1,14 @@
 // ===== Shopping List Page =====
 
-// Square add button in toolbar
+// Square add button in toolbar, icon sized to fit
 ion-toolbar ion-button {
   --border-radius: 6px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+
+  ion-icon {
+    font-size: 18px;
+  }
 }
 .list-items {
   padding: 8px 12px 80px;
