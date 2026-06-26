@@ -452,7 +452,14 @@ export class DatabaseService {
   }
 
   async deleteAllAcProducts(): Promise<void> {
-    await this.executeSQL("DELETE FROM products WHERE source = 'ACIS'");
+    // FK constraint blocks deleting products referenced by shopping_list_items.
+    // Temporarily disable FK checks — the same IDs are re-inserted right after
+    // so the references remain valid once FK checks are back on.
+    await this.executeSQL(`
+      PRAGMA foreign_keys = OFF;
+      DELETE FROM products WHERE source = 'ACIS';
+      PRAGMA foreign_keys = ON;
+    `);
   }
 
   /** Delete products by their IDs (used for delta sync deactivations). */
