@@ -219,15 +219,12 @@ export class SyncService {
           await this.db.deleteProductsByIds(deactivatedIds);
         }
       } else {
-        console.log(`[sync] Full sync: wiping ACIS products...`);
-        onProgress?.(Math.round(totalCount * 0.12), totalCount, 'Brisanje starih...');
-        await this.db.deleteAllAcProducts();
-
-        console.log(`[sync] Inserting ${products.length} products...`);
+        // Full sync: upsert everything — INSERT OR REPLACE updates existing
+        // products in place, avoiding FK constraint issues from deleting products
+        // referenced by shopping list items.
+        console.log(`[sync] Full sync: upserting ${products.length} products...`);
         await this.db.batchInsertProducts(products, (done, total) => {
-          // Scale progress from 12% to 98% during insert
-          const pct = 12 + Math.round((done / total) * 86);
-          onProgress?.(Math.round((pct / 100) * totalCount), totalCount, `Upisivanje ${done}/${total}`);
+          onProgress?.(done, total, `Upisivanje ${done}/${total}`);
         });
       }
     } catch (e: any) {
