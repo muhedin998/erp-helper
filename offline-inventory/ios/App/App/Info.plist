@@ -49,5 +49,12 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Kamera se koristi za skeniranje barkodova artikala.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
