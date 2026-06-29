@@ -515,6 +515,20 @@ export class DatabaseService {
     return newList;
   }
 
+  async cloneUnboughtItems(sourceId: string, newName: string): Promise<ShoppingList> {
+    const source = await this.getShoppingList(sourceId);
+    if (!source) throw new Error('Source list not found');
+    const newList = await this.createShoppingList(newName);
+    const items = await this.getShoppingListItems(sourceId);
+    for (const item of items) {
+      const remaining = item.quantity - item.purchasedQuantity;
+      if (remaining > 0) {
+        await this.addItemToList(newList.id, item.productId, remaining);
+      }
+    }
+    return newList;
+  }
+
   async getItemCountForList(listId: string): Promise<number> {
     const result = await this.query<{ count: number }>('SELECT COUNT(*) as count FROM shopping_list_items WHERE listId = ?', [listId]);
     return result[0]?.count ?? 0;

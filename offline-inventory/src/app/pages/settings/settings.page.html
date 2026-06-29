@@ -16,7 +16,7 @@
       </div>
       <div class="settings-info">
         <h3>O aplikaciji</h3>
-        <p>Offline Inventory Replenishment</p>
+        <p>Market Latko</p>
       </div>
       <ion-icon name="chevron-forward" class="chevron"></ion-icon>
     </div>
@@ -43,55 +43,6 @@
         <p>Obriši ACIS artikle i ponovo ih učitaj</p>
       </div>
       <ion-icon name="chevron-forward" class="chevron"></ion-icon>
-    </div>
-
-    <!-- Sync section -->
-    <div class="section-label">Sinhronizacija</div>
-
-    <div class="settings-card" (click)="toggleSyncConfig()" tappable>
-      <div class="settings-icon sync">
-        <ion-icon name="cloud-download-outline"></ion-icon>
-      </div>
-      <div class="settings-info">
-        <h3>Preuzmi sa servera</h3>
-        <p>{{ serverUrl || 'Server nije podešen' }}</p>
-      </div>
-      <ion-icon name="chevron-forward" class="chevron"></ion-icon>
-    </div>
-
-    <div class="sync-config" *ngIf="showSyncConfig">
-      <div class="sync-input-group">
-        <ion-input
-          [(ngModel)]="serverUrlInput"
-          placeholder="http://192.168.1.100:8765"
-          label="Adresa servera"
-          labelPlacement="stacked"
-          class="server-input"
-        ></ion-input>
-        <ion-button size="small" fill="clear" (click)="testConnection()" [disabled]="testingConnection">
-          {{ testingConnection ? 'Proveravam...' : 'Testiraj' }}
-        </ion-button>
-      </div>
-      <div class="connection-status" *ngIf="connectionStatus">
-        <span [class.success]="connectionStatus.ok" [class.error]="!connectionStatus.ok">
-          {{ connectionStatus.ok
-              ? 'Server dostupan (' + connectionStatus.productCount + ' artikala)'
-              : connectionStatus.error }}
-        </span>
-      </div>
-      <div class="sync-actions">
-        <ion-button expand="block" (click)="saveServerUrl()" color="medium" size="small">
-          Sačuvaj adresu
-        </ion-button>
-        <ion-button expand="block" (click)="startSync()" [disabled]="(!serverUrl && !serverUrlInput.trim()) || syncing" color="primary">
-          {{ syncing ? 'Sinhronizacija...' : 'Pokreni sinhronizaciju' }}
-        </ion-button>
-      </div>
-      <div class="sync-progress" *ngIf="syncing">
-        <p class="progress-stage" *ngIf="syncStage">{{ syncStage }}</p>
-        <ion-progress-bar [value]="syncProgress / (syncTotal || 1)"></ion-progress-bar>
-        <p class="progress-text">{{ syncProgress }} / {{ syncTotal || '?' }}</p>
-      </div>
     </div>
 
     <!-- Data section -->

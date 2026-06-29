@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="page-header">
-    <ion-title>Offline Inventory</ion-title>
+    <ion-title>Market Latko</ion-title>
     <ion-buttons slot="end">
       <ion-button routerLink="/settings">
         <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
@@ -59,8 +59,8 @@
   <!-- Secondary row -->
   <div class="secondary-actions">
     <div class="grid-card action-card inactive small" routerLink="/import">
-      <ion-icon name="cloud-upload-outline"></ion-icon>
-      <span class="card-label">Import</span>
+      <ion-icon name="cloud-download-outline"></ion-icon>
+      <span class="card-label">Sinhronizacija</span>
     </div>
     <div class="grid-card action-card inactive small" routerLink="/settings">
       <ion-icon name="settings-outline"></ion-icon>
@@ -99,6 +99,14 @@
     <ion-icon name="document-text-outline"></ion-icon>
     <h3>Nema listi</h3>
     <p>Kreirajte prvu listu za nabavku</p>
+  </div>
+
+  <!-- Test button -->
+  <div class="ion-text-center ion-padding" style="margin-top: 16px;">
+    <ion-button size="small" fill="clear" color="medium" (click)="createTestList()">
+      <ion-icon slot="start" name="flask-outline"></ion-icon>
+      Test lista (100 artikala)
+    </ion-button>
   </div>
 </ion-content>
 

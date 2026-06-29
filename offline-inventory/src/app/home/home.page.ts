@@ -135,4 +135,42 @@ export class HomePage implements OnInit {
   get recentLists() {
     return this.listStore.allLists().slice(0, 5);
   }
+
+  async createTestList() {
+    const loading = await this.loadingCtrl.create({ message: 'Kreiranje test liste...' });
+    await loading.present();
+    try {
+      // Get first 100 products from the catalog
+      const products = await this.db.query<{ id: number }>(
+        'SELECT id FROM products WHERE active = 1 ORDER BY id LIMIT 100'
+      );
+      if (products.length === 0) {
+        await loading.dismiss();
+        const toast = await this.toastCtrl.create({
+          message: 'Nema artikala u katalogu.',
+          duration: 2000,
+          color: 'warning',
+        });
+        await toast.present();
+        return;
+      }
+
+      const list = await this.listStore.createList('Test lista — 100 artikala');
+      for (const p of products) {
+        await this.db.addItemToList(list.id, p.id, 1);
+      }
+
+      await loading.dismiss();
+      this.router.navigate(['/shopping-list-detail', list.id]);
+    } catch (e: any) {
+      console.error('createTestList error:', e);
+      await loading.dismiss();
+      const toast = await this.toastCtrl.create({
+        message: `Greška: ${e?.message || 'Nepoznata'}`,
+        duration: 3000,
+        color: 'danger',
+      });
+      await toast.present();
+    }
+  }
 }

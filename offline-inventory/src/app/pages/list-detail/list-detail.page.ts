@@ -134,4 +134,59 @@ export class ListDetailPage implements OnInit {
       }
     }
   }
+
+  async reuseUnbought() {
+    const list = this.store.activeList();
+    if (!list) return;
+    const count = this.store.unboughtItems().length;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Kopiraj nekupljeno',
+      message: `Kreiraće se nova lista sa ${count} nekupljenih artikala (preostala količina).`,
+      inputs: [
+        {
+          name: 'naziv',
+          type: 'text',
+          placeholder: 'Naziv nove liste',
+          value: `${list.naziv} (nekupljeno)`,
+        },
+      ],
+      buttons: [
+        { text: 'Odustani', role: 'cancel' },
+        { text: 'Kreiraj', role: 'confirm' },
+      ],
+    });
+
+    await alert.present();
+    const result = await alert.onDidDismiss();
+    const naziv = result?.data?.values?.naziv?.trim();
+
+    if (result?.role === 'confirm' && naziv) {
+      const loading = await this.loadingCtrl.create({ message: 'Kopiranje nekupljenih...' });
+      await loading.present();
+      try {
+        const newList = await this.store.cloneUnboughtItems(list.id, naziv);
+        await loading.dismiss();
+
+        const toast = await this.toastCtrl.create({
+          message: `Lista "${naziv}" kreirana sa ${count} nekupljenih artikala`,
+          duration: 2000,
+          color: 'success',
+          position: 'bottom',
+        });
+        await toast.present();
+
+        this.router.navigate(['/shopping-list-detail', newList.id], { replaceUrl: true });
+      } catch (e) {
+        console.error('Clone unbought failed:', e);
+        await loading.dismiss();
+        const toast = await this.toastCtrl.create({
+          message: 'Greška pri kopiranju',
+          duration: 2000,
+          color: 'danger',
+        });
+        await toast.present();
+      }
+    }
+  }
 }

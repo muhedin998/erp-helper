@@ -1,17 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { AlertController, LoadingController, ToastController } from '@ionic/angular';
-import { ProductStore } from '../../stores/product.store';
+import { AlertController, ToastController } from '@ionic/angular';
 import { DatabaseService } from '../../database/database.service';
-import Papa from 'papaparse';
-
-interface CsvRow {
-  sifra: string;
-  naziv: string;
-  barcode?: string;
-  cena?: string;
-  grupa?: string;
-  jedinicaMere?: string;
-}
+import { SyncService } from '../../services/sync.service';
 
 @Component({
   selector: 'app-import',
@@ -20,113 +10,121 @@ interface CsvRow {
   standalone: false,
 })
 export class ImportPage {
-  productStore = inject(ProductStore);
   db = inject(DatabaseService);
+  syncService = inject(SyncService);
 
-  previewRows: CsvRow[] = [];
-  fileName = '';
-  showPreview = false;
-  fileContent = '';
+  // IP octets — only 3rd and 4th change
+  octet3 = '';
+  octet4 = '';
 
-  constructor(
-    private alertCtrl: AlertController,
-    private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController,
-  ) {}
+  testingConnection = false;
+  connectionStatus: { ok: boolean; productCount?: number; error?: string } | null = null;
+  syncing = false;
+  syncProgress = 0;
+  syncTotal = 0;
+  syncStage = '';
 
-  async onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
+  constructor(private alertCtrl: AlertController, private toastCtrl: ToastController) {}
 
-    this.fileName = file.name;
-    this.fileContent = await file.text();
-
-    Papa.parse(this.fileContent, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (result: Papa.ParseResult<any>) => {
-        this.previewRows = result.data as CsvRow[];
-        this.showPreview = true;
-      },
-      error: () => {
-        this.toastCtrl.create({
-          message: 'Greška pri parsiranju CSV fajla.',
-          duration: 3000,
-          color: 'danger',
-        }).then(t => t.present());
-      },
-    });
+  async ionViewWillEnter() {
+    const saved = await this.syncService.getLastIpOctets();
+    if (saved) {
+      this.octet3 = saved[0];
+      this.octet4 = saved[1];
+    }
   }
 
-  async confirmImport() {
-    if (this.previewRows.length === 0) return;
+  get fullUrl(): string {
+    return `http://192.168.${this.octet3}.${this.octet4}:8765`;
+  }
 
-    const alert = await this.alertCtrl.create({
-      header: 'Potvrda uvoza',
-      message: `Uvesti ${this.previewRows.length} artikala? ACIS artikli će biti zamenjeni, MANUAL ostaju.`,
-      buttons: [
-        { text: 'Odustani', role: 'cancel' },
-        {
-          text: 'Uvezi',
-          handler: async () => {
-            const loading = await this.loadingCtrl.create({ message: 'Uvoz artikala...' });
-            await loading.present();
+  get isValidIp(): boolean {
+    const a = Number(this.octet3);
+    const b = Number(this.octet4);
+    return Number.isInteger(a) && a >= 0 && a <= 255 &&
+           Number.isInteger(b) && b >= 0 && b <= 255;
+  }
 
-            try {
-              // Delete existing ACIS products
-              await this.db.deleteAllAcProducts();
+  async testConnection() {
+    if (!this.isValidIp) return;
+    this.testingConnection = true;
+    this.connectionStatus = null;
+    this.connectionStatus = await this.syncService.checkServer(this.fullUrl);
+    this.testingConnection = false;
+    // Auto-save on success
+    if (this.connectionStatus?.ok) {
+      await this.syncService.setLastIpOctets(this.octet3, this.octet4);
+      await this.syncService.setServerUrl(this.fullUrl);
+    }
+  }
 
-              // Import new ones
-              for (const row of this.previewRows) {
-                if (row.sifra && row.naziv) {
-                  await this.db.insertProduct({
-                    sifra: row.sifra,
-                    naziv: row.naziv,
-                    barcode: row.barcode || '',
-                    cena: row.cena ? Number(row.cena) : undefined,
-                    grupa: row.grupa || undefined,
-                    jedinicaMere: row.jedinicaMere || undefined,
-                    source: 'ACIS',
-                    active: true,
-                  });
-                }
-              }
+  async startSync() {
+    if (!this.isValidIp) return;
+    const url = this.fullUrl;
+    this.syncing = true;
+    this.syncProgress = 0;
+    this.syncTotal = 0;
 
-              await this.db.rebuildFtsIfAvailable();
-              await this.productStore.searchProducts('');
+    try {
+      // Save IP for next time
+      await this.syncService.setLastIpOctets(this.octet3, this.octet4);
+      await this.syncService.setServerUrl(url);
 
-              const toast = await this.toastCtrl.create({
-                message: `Uvezeno ${this.previewRows.length} artikala.`,
-                duration: 2000,
-                color: 'success',
-              });
-              await toast.present();
+      // Clear seed marker to avoid conflicts
+      await this.db.clearSeedMarker();
 
-              this.showPreview = false;
-              this.previewRows = [];
-              this.fileName = '';
-            } catch (e) {
-              console.error('Import error:', e);
-              const toast = await this.toastCtrl.create({
-                message: 'Greška pri uvozu artikala.',
-                duration: 3000,
-                color: 'danger',
-              });
-              await toast.present();
-            } finally {
-              await loading.dismiss();
-            }
-          },
+      const result = await this.syncService.syncProducts(
+        url,
+        (done, total, stage) => {
+          this.syncProgress = done;
+          this.syncTotal = total;
+          this.syncStage = stage || '';
         },
-      ],
-    });
-    await alert.present();
-  }
+      );
 
-  cancelImport() {
-    this.showPreview = false;
-    this.previewRows = [];
-    this.fileName = '';
+      if (result.success) {
+        let msg = '';
+        if (result.isDelta) {
+          msg = `Ažurirano ${result.productCount} artikala`;
+          if (result.deactivatedCount && result.deactivatedCount > 0) {
+            msg += ` (${result.deactivatedCount} uklonjeno)`;
+          }
+        } else {
+          msg = `Sinhronizovano ${result.productCount} artikala`;
+        }
+        const toast = await this.toastCtrl.create({
+          message: msg,
+          duration: 3000,
+          color: 'success',
+        });
+        await toast.present();
+      } else {
+        const toast = await this.toastCtrl.create({
+          message: `Greška: ${result.error || 'Sinhronizacija nije uspela.'}`,
+          duration: 5000,
+          color: 'danger',
+          buttons: result.errorDetails ? [{
+            text: 'Detalji',
+            handler: () => {
+              this.alertCtrl.create({
+                header: 'Detalji greške',
+                message: result.errorDetails || 'Nema dodatnih informacija.',
+                buttons: ['OK'],
+              }).then(a => a.present());
+            },
+          }] : [],
+        });
+        await toast.present();
+      }
+    } catch (e: any) {
+      const toast = await this.toastCtrl.create({
+        message: `Greška: ${e?.message || 'Nepoznata'}`,
+        duration: 4000,
+        color: 'danger',
+      });
+      await toast.present();
+    } finally {
+      this.syncing = false;
+    }
   }
 }

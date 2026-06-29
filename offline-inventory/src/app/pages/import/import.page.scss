@@ -1,6 +1,6 @@
-// ===== Import Page =====
+// ===== Import / Sync Page =====
 
-.upload-card {
+.sync-card {
   background: #FFFFFF;
   border-radius: 20px;
   padding: 32px 24px;
@@ -9,11 +9,11 @@
   margin-top: 20px;
 }
 
-.upload-icon {
+.sync-icon {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #EDE9FE;
+  background: #DBEAFE;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,58 +21,139 @@
 
   ion-icon {
     font-size: 36px;
+    color: #1D4ED8;
+  }
+}
+
+.sync-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 4px;
+}
+
+.sync-card .sync-url {
+  font-size: 0.85rem;
+  color: #9CA3AF;
+  margin: 0 0 20px;
+  font-family: monospace;
+
+  strong {
     color: #8B5CF6;
   }
 }
 
-.upload-card h3 {
-  font-size: 1.2rem;
+// IP input row
+.ip-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: #F3F4F6;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+.ip-prefix, .ip-suffix, .ip-dot {
+  color: #9CA3AF;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.ip-input {
+  width: 48px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1F2937;
-  margin: 0 0 8px;
+  --padding-start: 4px;
+  --padding-end: 4px;
 }
 
-.upload-card p {
+// Connection status
+.connection-status {
+  margin: 12px 0;
   font-size: 0.85rem;
-  color: #9CA3AF;
-  margin: 0;
+  text-align: center;
+
+  .success { color: #166534; font-weight: 600; }
+  .error { color: #DC2626; }
 }
 
-// Reuse product-card style from catalog
-.product-card {
-  background: #F3F4F6;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 8px;
+// Actions
+.sync-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
 
-  .product-info h3 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #1F2937;
-    margin: 0 0 4px;
+.pill-button {
+  --border-radius: 14px;
+}
+
+// Progress
+.sync-progress {
+  margin-top: 16px;
+
+  .progress-stage {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1D4ED8;
+    margin-bottom: 6px;
   }
 
-  .product-meta {
-    font-size: 0.8rem;
+  .progress-text {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6B7280;
+    margin-top: 4px;
+  }
+}
+
+// Info note
+.info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: #F9FAFB;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  color: #6B7280;
+  line-height: 1.4;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 18px;
     color: #9CA3AF;
-    margin: 0 0 2px;
+    margin-top: 1px;
   }
 }
 
 @media (prefers-color-scheme: dark) {
-  .upload-card {
+  .sync-card {
     background: #1F2937;
   }
 
-  .upload-card h3 {
+  .sync-card h3 {
     color: #E5E7EB;
   }
 
-  .product-card {
-    background: #1F2937;
+  .ip-row {
+    background: #111827;
+  }
 
-    .product-info h3 {
-      color: #E5E7EB;
-    }
+  .ip-input {
+    color: #E5E7EB;
+  }
+
+  .info-note {
+    background: #111827;
   }
 }

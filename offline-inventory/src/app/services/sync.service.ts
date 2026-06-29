@@ -31,6 +31,7 @@ export class SyncService {
 
   private readonly SERVER_URL_KEY = 'sync_server_url';
   private readonly LAST_SYNC_KEY = 'sync_last_at';
+  private readonly LAST_IP_OCTETS_KEY = 'sync_last_ip_octets';
 
   async getServerUrl(): Promise<string> {
     return (await this.db.getMeta(this.SERVER_URL_KEY)) || '';
@@ -46,6 +47,17 @@ export class SyncService {
 
   async setLastSyncAt(iso: string): Promise<void> {
     await this.db.setMeta(this.LAST_SYNC_KEY, iso);
+  }
+
+  async getLastIpOctets(): Promise<[string, string] | null> {
+    const raw = await this.db.getMeta(this.LAST_IP_OCTETS_KEY);
+    if (!raw) return null;
+    const parts = raw.split('.');
+    return parts.length === 2 ? [parts[0], parts[1]] : null;
+  }
+
+  async setLastIpOctets(octet3: string, octet4: string): Promise<void> {
+    await this.db.setMeta(this.LAST_IP_OCTETS_KEY, `${octet3}.${octet4}`);
   }
 
   async checkServer(url: string): Promise<{ ok: boolean; productCount?: number; error?: string }> {

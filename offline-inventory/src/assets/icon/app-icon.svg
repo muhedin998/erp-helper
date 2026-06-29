@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#C4B5FD"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#bg)"/>
+
+  <!-- Store/market building -->
+  <g transform="translate(256, 230)">
+    <!-- Roof / awning -->
+    <path d="M-120,-80 L-100,-120 L100,-120 L120,-80 Z" fill="url(#accent)" opacity="0.9"/>
+    <!-- Scalloped awning edge -->
+    <path d="M-120,-80 Q-105,-65 -90,-80 Q-75,-65 -60,-80 Q-45,-65 -30,-80 Q-15,-65 0,-80 Q15,-65 30,-80 Q45,-65 60,-80 Q75,-65 90,-80 Q105,-65 120,-80" fill="none" stroke="#C4B5FD" stroke-width="4"/>
+
+    <!-- Building body -->
+    <rect x="-100" y="-80" width="200" height="140" rx="6" fill="white" opacity="0.15"/>
+
+    <!-- Door -->
+    <rect x="-28" y="10" width="56" height="50" rx="4" fill="white" opacity="0.3"/>
+    <circle cx="16" cy="38" r="4" fill="white" opacity="0.5"/>
+
+    <!-- Left window -->
+    <rect x="-80" y="-55" width="38" height="34" rx="4" fill="white" opacity="0.25"/>
+    <line x1="-61" y1="-55" x2="-61" y2="-21" stroke="white" stroke-width="2" opacity="0.2"/>
+    <line x1="-80" y1="-38" x2="-42" y2="-38" stroke="white" stroke-width="2" opacity="0.2"/>
+
+    <!-- Right window -->
+    <rect x="42" y="-55" width="38" height="34" rx="4" fill="white" opacity="0.25"/>
+    <line x1="61" y1="-55" x2="61" y2="-21" stroke="white" stroke-width="2" opacity="0.2"/>
+    <line x1="42" y1="-38" x2="80" y2="-38" stroke="white" stroke-width="2" opacity="0.2"/>
+  </g>
+
+  <!-- Shopping basket icon overlay (bottom-right) -->
+  <g transform="translate(365, 365)">
+    <circle r="68" fill="#10B981"/>
+    <!-- Basket handle -->
+    <path d="M-30,-20 Q-30,-45 0,-45 Q30,-45 30,-20" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/>
+    <!-- Basket body -->
+    <path d="M-35,-15 L-25,30 L25,30 L35,-15 Z" fill="none" stroke="white" stroke-width="5" stroke-linejoin="round"/>
+    <!-- Basket items (dots) -->
+    <circle cx="-12" cy="2" r="6" fill="white" opacity="0.8"/>
+    <circle cx="12" cy="2" r="6" fill="white" opacity="0.8"/>
+    <circle cx="0" cy="-10" r="6" fill="white" opacity="0.8"/>
+  </g>
+
+  <!-- "M" letter stylized -->
+  <text x="256" y="165" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-weight="800" font-size="100" fill="white" opacity="0.95">M</text>
+</svg>

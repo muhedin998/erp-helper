@@ -17,6 +17,12 @@ ion-content {
   gap: 10px;
   margin-bottom: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease;
+
+  &.unbought-item {
+    background: #FEF2F2;
+    border-left: 3px solid #EF4444;
+  }
 }
 
 .item-qty-pill {
@@ -32,6 +38,11 @@ ion-content {
   font-size: 0.85rem;
   font-weight: 800;
   color: #5B21B6;
+
+  &.unbought-pill {
+    background: #FEE2E2;
+    color: #DC2626;
+  }
 }
 
 .item-detail-info {
@@ -62,6 +73,15 @@ ion-content {
       color: #059669;
     }
 
+    .item-partial strong {
+      color: #F59E0B;
+    }
+
+    .item-not-purchased {
+      color: #EF4444;
+      font-weight: 600;
+    }
+
     strong {
       color: #8B5CF6;
     }
@@ -71,6 +91,16 @@ ion-content {
 @media (prefers-color-scheme: dark) {
   .item-card {
     background: #1F2937;
+
+    &.unbought-item {
+      background: #3B1111;
+      border-left: 3px solid #F87171;
+    }
+  }
+
+  .item-qty-pill.unbought-pill {
+    background: #4C1D1D;
+    color: #FCA5A5;
   }
 
   .item-detail-info h3 {
@@ -83,6 +113,10 @@ ion-content {
     .item-price {
       color: #34D399;
     }
+
+    .item-not-purchased {
+      color: #F87171;
+    }
   }
 }
 
@@ -93,4 +127,12 @@ ion-content {
   font-weight: 700;
   letter-spacing: 0.3px;
   margin: 4px 10px;
+}
+
+.reuse-unbought-button {
+  --border-radius: 14px;
+  --border-width: 2px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin: 0 10px 8px;
 }

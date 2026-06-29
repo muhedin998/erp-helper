@@ -3,76 +3,90 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home" icon="chevron-back"></ion-back-button>
     </ion-buttons>
-    <ion-title>Import kataloga</ion-title>
+    <ion-title>Sinhronizacija</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="ion-padding" *ngIf="!showPreview">
-    <!-- Upload card -->
-    <div class="upload-card">
-      <div class="upload-icon">
-        <ion-icon name="cloud-upload-outline"></ion-icon>
+  <div class="ion-padding">
+    <!-- Server card -->
+    <div class="sync-card">
+      <div class="sync-icon">
+        <ion-icon name="cloud-download-outline"></ion-icon>
       </div>
-      <h3>CSV Import</h3>
-      <p>Kolona: <strong>sifra, naziv, barcode, cena, grupa, jedinicaMere</strong></p>
-      <p class="ion-padding-top">ACIS artikli se zamenjuju. MANUAL artikli ostaju.</p>
+      <h3>Server za sinhronizaciju</h3>
+      <p class="sync-url">http://192.168.<strong>X</strong>.<strong>Y</strong>:8765</p>
 
-      <div class="ion-padding-top">
-        <ion-button expand="block" (click)="fileInput.click()" class="pill-button" color="primary">
-          <ion-icon slot="start" name="document-outline"></ion-icon>
-          Odaberi CSV fajl
-        </ion-button>
-        <input #fileInput type="file" accept=".csv" (change)="onFileSelected($event)" hidden />
+      <!-- IP inputs -->
+      <div class="ip-row">
+        <span class="ip-prefix">192.168.</span>
+        <ion-input
+          [(ngModel)]="octet3"
+          type="number"
+          min="0"
+          max="255"
+          placeholder="0"
+          class="ip-input"
+          [disabled]="syncing"
+        ></ion-input>
+        <span class="ip-dot">.</span>
+        <ion-input
+          [(ngModel)]="octet4"
+          type="number"
+          min="0"
+          max="255"
+          placeholder="0"
+          class="ip-input"
+          [disabled]="syncing"
+        ></ion-input>
+        <span class="ip-suffix">:8765</span>
       </div>
+    </div>
+
+    <!-- Connection status -->
+    <div class="connection-status" *ngIf="connectionStatus">
+      <span [class.success]="connectionStatus.ok" [class.error]="!connectionStatus.ok">
+        {{ connectionStatus.ok
+            ? 'Server dostupan — ' + connectionStatus.productCount + ' artikala'
+            : connectionStatus.error }}
+      </span>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="sync-actions">
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="testConnection()"
+        [disabled]="!isValidIp || testingConnection || syncing"
+        class="pill-button"
+      >
+        {{ testingConnection ? 'Proveravam...' : 'Testiraj vezu' }}
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="startSync()"
+        [disabled]="!isValidIp || syncing"
+        class="pill-button"
+      >
+        {{ syncing ? 'Sinhronizacija...' : 'Pokreni sinhronizaciju' }}
+      </ion-button>
+    </div>
+
+    <!-- Progress -->
+    <div class="sync-progress" *ngIf="syncing">
+      <p class="progress-stage" *ngIf="syncStage">{{ syncStage }}</p>
+      <ion-progress-bar [value]="syncProgress / (syncTotal || 1)"></ion-progress-bar>
+      <p class="progress-text">{{ syncProgress }} / {{ syncTotal || '?' }}</p>
+    </div>
+
+    <!-- Info -->
+    <div class="info-note">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <span>Sinhronizacija preuzima katalog artikala sa servera. Podaci se čuvaju lokalno za rad bez interneta.</span>
     </div>
   </div>
-
-  <!-- Preview -->
-  <ng-container *ngIf="showPreview">
-    <div class="info-card slide-in">
-      <div class="info-row">
-        <div class="info-item">
-          <span class="info-label">Fajl</span>
-          <span class="info-value" style="font-size: 0.9rem;">{{ fileName }}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Redova</span>
-          <span class="info-value">{{ previewRows.length }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="ion-padding-horizontal ion-padding-top">
-      <ion-grid>
-        <ion-row>
-          <ion-col size="6">
-            <ion-button expand="block" (click)="confirmImport()" class="pill-button" color="primary">
-              <ion-icon slot="start" name="checkmark-outline"></ion-icon>
-              Potvrdi uvoz
-            </ion-button>
-          </ion-col>
-          <ion-col size="6">
-            <ion-button expand="block" (click)="cancelImport()" fill="outline" class="pill-button" color="medium">
-              Odustani
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </div>
-
-    <div style="padding: 4px 12px 80px;">
-      <div class="product-card" *ngFor="let row of previewRows.slice(0, 50)">
-        <div class="product-info">
-          <h3>{{ row.naziv }}</h3>
-          <p class="product-meta">Šifra: {{ row.sifra }} <span *ngIf="row.barcode">| Barkod: {{ row.barcode }}</span></p>
-          <p class="product-meta" *ngIf="row.cena">Cena: {{ row.cena }} RSD</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="ion-text-center ion-padding" *ngIf="previewRows.length > 50">
-      <p style="color:#9CA3AF;font-size:0.85rem;">Prikazano prvih 50 od {{ previewRows.length }} artikala.</p>
-    </div>
-  </ng-container>
 </ion-content>

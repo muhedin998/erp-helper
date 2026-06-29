@@ -46,8 +46,8 @@
 
   <!-- Items -->
   <div class="items-section">
-    <div class="item-card" *ngFor="let item of store.items()">
-      <div class="item-qty-pill">
+    <div class="item-card" *ngFor="let item of store.sortedItems()" [class.unbought-item]="store.activeList()?.status === 'PURCHASED' && item.purchasedQuantity < item.quantity">
+      <div class="item-qty-pill" [class.unbought-pill]="store.activeList()?.status === 'PURCHASED' && item.purchasedQuantity < item.quantity">
         {{ item.quantity }}
       </div>
       <div class="item-detail-info">
@@ -55,8 +55,9 @@
         <p class="item-meta">
           <span>{{ item.sifra }}</span>
           <span *ngIf="item.cena" class="item-price"> · {{ item.cena | number:'1.2-2' }} RSD</span>
-          <span *ngIf="item.purchasedQuantity > 0" class="item-purchased"> · Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></span>
-          <span *ngIf="item.purchasedQuantity === 0 && store.activeList()?.status === 'PURCHASED'" class="item-purchased"> · <em>Nije kupljeno</em></span>
+          <span *ngIf="item.purchasedQuantity > 0 && item.purchasedQuantity < item.quantity" class="item-partial"> · Kupljeno: <strong>{{ item.purchasedQuantity }}</strong> od {{ item.quantity }}</span>
+          <span *ngIf="item.purchasedQuantity >= item.quantity && store.activeList()?.status === 'PURCHASED'" class="item-purchased"> · Kupljeno: <strong>{{ item.purchasedQuantity }}</strong></span>
+          <span *ngIf="item.purchasedQuantity === 0 && store.activeList()?.status === 'PURCHASED'" class="item-not-purchased"> · <em>Nije kupljeno</em></span>
         </p>
       </div>
     </div>
@@ -75,6 +76,10 @@
     <ion-button expand="block" (click)="reuseList()" class="pill-button reuse-button" fill="outline" color="primary">
       <ion-icon slot="start" name="copy-outline"></ion-icon>
       Ponovo koristi listu
+    </ion-button>
+    <ion-button expand="block" (click)="reuseUnbought()" class="pill-button reuse-unbought-button" fill="outline" color="warning" *ngIf="store.hasUnbought()">
+      <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+      Kopiraj nekupljeno ({{ store.unboughtItems().length }})
     </ion-button>
   </ion-toolbar>
 </ion-footer>

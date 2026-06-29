@@ -97,67 +97,6 @@
   color: #DC2626;
 }
 
-// Sync section
-.settings-icon.sync {
-  background: #DBEAFE;
-  ion-icon { color: #1D4ED8; }
-}
-
-.sync-config {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.sync-input-group {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-
-  .server-input {
-    flex: 1;
-  }
-}
-
-.connection-status {
-  margin: 8px 0;
-  font-size: 0.85rem;
-
-  .success { color: #166534; }
-  .error { color: #DC2626; }
-}
-
-.sync-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-
-  ion-button {
-    flex: 1;
-  }
-}
-
-.sync-progress {
-  margin-top: 12px;
-
-  .progress-stage {
-    text-align: center;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #1D4ED8;
-    margin-bottom: 6px;
-  }
-
-  .progress-text {
-    text-align: center;
-    font-size: 0.85rem;
-    color: #6B7280;
-    margin-top: 4px;
-  }
-}
-
 @media (prefers-color-scheme: dark) {
   .settings-card {
     background: #1F2937;
@@ -165,9 +104,5 @@
 
   .settings-info h3 {
     color: #E5E7EB;
-  }
-
-  .sync-config {
-    background: #1F2937;
   }
 }

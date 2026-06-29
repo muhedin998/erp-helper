@@ -75,7 +75,7 @@ export class ExportService {
     doc.setFontSize(9);
     doc.setTextColor(107, 114, 128);
     doc.text(`Ukupno: ${totalItems} artikala, ${totalQty} komada`, 14, finalY + 12);
-    doc.text('Offline Inventory', pageWidth - 14, finalY + 12, { align: 'right' });
+    doc.text('Market Latko', pageWidth - 14, finalY + 12, { align: 'right' });
 
     await this.outputPDF(doc, filename);
   }
@@ -89,8 +89,6 @@ export class ExportService {
     const now = new Date();
     const dateStr = now.toLocaleDateString('sr-Latn', { day: 'numeric', month: 'long', year: 'numeric' });
     const pageWidth  = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const colGap = 6;
 
     const totalItems = items.length;
     const totalQty   = items.reduce((s, i) => s + i.quantity, 0);
@@ -98,16 +96,10 @@ export class ExportService {
     const tableStyles: any  = { fontSize: 7, cellPadding: 1.5, lineColor: [229, 231, 235] };
     const headStyles: any   = { fillColor: [109, 40, 217] as [number,number,number], textColor: [255,255,255] as [number,number,number], fontStyle: 'bold', fontSize: 7 };
     const altRowStyles: any = { fillColor: [245, 243, 255] as [number,number,number] };
-    const columnStyles: any = {
-      0: { halign: 'center' as const, cellWidth: 6 },
-      1: { halign: 'center' as const, cellWidth: 10, fontStyle: 'bold' as const },
-      2: { cellWidth: 'auto' as const },
-      3: { cellWidth: 18, fontSize: 6, textColor: [156, 163, 175] as [number,number,number] },
-      4: { halign: 'right' as const, cellWidth: 28, fontSize: 6 },
-    };
 
     const makeCheckbox = (d: any) => {
-      if (d.section === 'body' && d.column.index === 0) {
+      // Draw checkboxes for columns 0 (left) and 5 (right)
+      if (d.section === 'body' && (d.column.index === 0 || d.column.index === 5)) {
         const size = 3.5;
         const cx = d.cell.x + (d.cell.width - size) / 2;
         const cy = d.cell.y + (d.cell.height - size) / 2;
@@ -117,102 +109,89 @@ export class ExportService {
       }
     };
 
-    const toRow = (item: typeof items[number]) => [
-      '',
-      String(item.quantity),
-      this.lat(item.naziv),
-      item.sifra,
-      item.cena != null ? this.lat(`${item.cena.toFixed(2)} RSD`) : '',
-    ];
+    // ── Split items into left and right halves ──────────────────────
+    const mid = Math.ceil(items.length / 2);
+    const leftItems  = items.slice(0, mid);
+    const rightItems = items.slice(mid);
+    const maxRows = Math.max(leftItems.length, rightItems.length);
 
-    const drawHeader = () => {
-      doc.setFillColor(109, 40, 217);
-      doc.rect(0, 0, pageWidth, 24, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.text(this.lat(title), 14, 12);
-      doc.setFontSize(8);
-      doc.text(this.lat(dateStr), 14, 19);
-      doc.text(`${totalItems} artikala | ${totalQty} komada`, pageWidth - 14, 19, { align: 'right' });
-      doc.setTextColor(0, 0, 0);
+    // ── Build combined rows (left cols | right cols) ────────────────
+    const combinedBody: any[][] = [];
+    for (let r = 0; r < maxRows; r++) {
+      const li = leftItems[r];
+      const ri = rightItems[r];
+      const leftPart = li ? [
+        '',
+        String(li.quantity),
+        this.lat(li.naziv),
+        li.sifra,
+        li.cena != null ? this.lat(`${li.cena.toFixed(2)} RSD`) : '',
+      ] : ['', '', '', '', ''];
+      const rightPart = ri ? [
+        '',
+        String(ri.quantity),
+        this.lat(ri.naziv),
+        ri.sifra,
+        ri.cena != null ? this.lat(`${ri.cena.toFixed(2)} RSD`) : '',
+      ] : ['', '', '', '', ''];
+      combinedBody.push([...leftPart, ...rightPart]);
+    }
+
+    const columnStyles: any = {
+      0:  { halign: 'center' as const, cellWidth: 6 },
+      1:  { halign: 'center' as const, cellWidth: 10, fontStyle: 'bold' as const },
+      2:  { cellWidth: 'auto' as const },
+      3:  { cellWidth: 18, fontSize: 6, textColor: [156, 163, 175] as [number,number,number] },
+      4:  { halign: 'right' as const, cellWidth: 28, fontSize: 6 },
+      5:  { halign: 'center' as const, cellWidth: 6 },
+      6:  { halign: 'center' as const, cellWidth: 10, fontStyle: 'bold' as const },
+      7:  { cellWidth: 'auto' as const },
+      8:  { cellWidth: 18, fontSize: 6, textColor: [156, 163, 175] as [number,number,number] },
+      9:  { halign: 'right' as const, cellWidth: 28, fontSize: 6 },
     };
 
-    // ── Row capacity calculation ──────────────────────────────────────
-    // empirical: fontSize=7, cellPadding=1.5 → ~6mm per row, ~7mm header
-    const ROW_H       = 6;
-    const HEAD_H      = 7;
-    const FOOTER_RESERVE = 18; // space for footer line + text
-    const HEADER_H    = 24;    // purple header bar
-    const NOTE_MARGIN = 10;    // extra if note present
-    const firstStartY = HEADER_H + 5 + (note ? NOTE_MARGIN : 0);
-    const laterStartY = HEADER_H + 5;
+    // ── Draw header ─────────────────────────────────────────────────
+    const HEADER_H = 24;
+    const NOTE_H = note ? 10 : 0;
+    const startY = HEADER_H + 5 + NOTE_H;
 
-    const rowsPerCol = (startY: number) =>
-      Math.floor((pageHeight - startY - FOOTER_RESERVE - HEAD_H) / ROW_H);
+    doc.setFillColor(109, 40, 217);
+    doc.rect(0, 0, pageWidth, HEADER_H, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.text(this.lat(title), 14, 12);
+    doc.setFontSize(8);
+    doc.text(this.lat(dateStr), 14, 19);
+    doc.text(`${totalItems} artikala | ${totalQty} komada`, pageWidth - 14, 19, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
 
-    // ── Chunk items into column-sized groups ─────────────────────────
-    // Pattern: [leftPage1, rightPage1, leftPage2, rightPage2, ...]
-    const chunks: (typeof items)[] = [];
-    let remaining = [...items];
-    let first = true;
-    while (remaining.length > 0) {
-      const cap = rowsPerCol(first ? firstStartY : laterStartY);
-      first = false;
-      chunks.push(remaining.splice(0, cap)); // left column
-      chunks.push(remaining.splice(0, cap)); // right column (may be empty)
+    if (note) {
+      doc.setFontSize(8);
+      doc.setTextColor(107, 114, 128);
+      const lines = doc.splitTextToSize(this.lat(note), pageWidth - 28);
+      doc.text(lines, 14, HEADER_H + 4);
+      doc.setTextColor(0, 0, 0);
     }
 
-    // ── Render page by page ──────────────────────────────────────────
-    for (let i = 0; i < chunks.length; i += 2) {
-      const isFirstPage = i === 0;
-      if (!isFirstPage) doc.addPage();
+    // ── Single autoTable with both columns ──────────────────────────
+    autoTable(doc, {
+      head: [[
+        '', 'K', 'Naziv', 'Sifra', 'Cena',
+        '', 'K', 'Naziv', 'Sifra', 'Cena',
+      ]],
+      body: combinedBody,
+      startY,
+      margin: { left: 10, right: 10, top: startY, bottom: 10 },
+      styles: tableStyles,
+      headStyles,
+      alternateRowStyles: altRowStyles,
+      columnStyles,
+      didDrawCell: makeCheckbox,
+    });
 
-      drawHeader();
+    const finalY = (doc as any).lastAutoTable?.finalY ?? startY;
 
-      let startY = isFirstPage ? firstStartY : laterStartY;
-
-      if (isFirstPage && note) {
-        doc.setFontSize(8);
-        doc.setTextColor(107, 114, 128);
-        const lines = doc.splitTextToSize(this.lat(note), pageWidth - 28);
-        doc.text(lines, 14, startY - NOTE_MARGIN + 2);
-        doc.setTextColor(0, 0, 0);
-      }
-
-      const leftChunk  = chunks[i]     ?? [];
-      const rightChunk = chunks[i + 1] ?? [];
-
-      if (leftChunk.length > 0) {
-        autoTable(doc, {
-          head: [['', 'K', 'Naziv', 'Sifra', 'Cena']],
-          body: leftChunk.map(toRow),
-          startY,
-          margin: { left: 10, right: pageWidth / 2 + colGap / 2 },
-          styles: tableStyles,
-          headStyles,
-          alternateRowStyles: altRowStyles,
-          columnStyles,
-          didDrawCell: makeCheckbox,
-        });
-      }
-
-      if (rightChunk.length > 0) {
-        autoTable(doc, {
-          head: [['', 'K', 'Naziv', 'Sifra', 'Cena']],
-          body: rightChunk.map(toRow),
-          startY,
-          margin: { left: pageWidth / 2 + colGap / 2, right: 10 },
-          styles: tableStyles,
-          headStyles,
-          alternateRowStyles: altRowStyles,
-          columnStyles,
-          didDrawCell: makeCheckbox,
-        });
-      }
-    }
-
-    // ── Footer on last page ──────────────────────────────────────────
-    const finalY = (doc as any).lastAutoTable?.finalY ?? firstStartY;
+    // ── Footer ──────────────────────────────────────────────────────
     doc.setDrawColor(109, 40, 217);
     doc.setLineWidth(0.5);
     doc.line(14, finalY + 4, pageWidth - 14, finalY + 4);
@@ -221,7 +200,7 @@ export class ExportService {
     doc.text(`Ukupno: ${totalItems} artikala, ${totalQty} komada`, 14, finalY + 9);
     doc.setFontSize(7);
     doc.setTextColor(156, 163, 175);
-    doc.text('Offline Inventory', pageWidth - 14, finalY + 9, { align: 'right' });
+    doc.text('Market Latko', pageWidth - 14, finalY + 9, { align: 'right' });
 
     await this.outputPDF(doc, `Spisak_${title.replace(/\s+/g, '_')}`);
   }

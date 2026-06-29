@@ -33,6 +33,15 @@ export const ShoppingListStore = signalStore(
       return Math.round((items().filter(i => i.checked).length / total) * 100);
     }),
     isDraft: computed(() => activeList()?.status === 'DRAFT'),
+    unboughtItems: computed(() => items().filter(i => i.purchasedQuantity < i.quantity)),
+    hasUnbought: computed(() => items().some(i => i.purchasedQuantity < i.quantity)),
+    sortedItems: computed(() => {
+      const all = items();
+      if (activeList()?.status !== 'PURCHASED') return all;
+      const unbought = all.filter(i => i.purchasedQuantity < i.quantity);
+      const bought = all.filter(i => i.purchasedQuantity >= i.quantity);
+      return [...unbought, ...bought];
+    }),
   })),
   withMethods((store, db = inject(DatabaseService)) => ({
     async loadAllLists(): Promise<void> {
@@ -93,6 +102,16 @@ export const ShoppingListStore = signalStore(
       if (!source) throw new Error('Source list not found');
       const newName = customName || `${source.naziv} (kopija)`;
       const list = await db.cloneShoppingList(sourceId, newName);
+      await this.loadAllLists();
+      await this.loadHistory();
+      return list;
+    },
+
+    async cloneUnboughtItems(sourceId: string, customName?: string): Promise<ShoppingList> {
+      const source = await db.getShoppingList(sourceId);
+      if (!source) throw new Error('Source list not found');
+      const newName = customName || `${source.naziv} (nekupljeno)`;
+      const list = await db.cloneUnboughtItems(sourceId, newName);
       await this.loadAllLists();
       await this.loadHistory();
       return list;
