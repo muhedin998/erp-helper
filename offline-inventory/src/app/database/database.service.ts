@@ -595,4 +595,21 @@ export class DatabaseService {
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([date, lists]) => ({ date, lists }));
   }
+
+  async enforceMaxLists(maxLists: number = 100): Promise<number> {
+    const countResult = await this.query<{ count: number }>('SELECT COUNT(*) as count FROM shopping_lists');
+    const total = countResult[0]?.count ?? 0;
+    if (total <= maxLists) return 0;
+    const toDelete = total - maxLists;
+    const old = await this.query<{ id: string }>(
+      "SELECT id FROM shopping_lists WHERE status = 'PURCHASED' ORDER BY createdAt ASC LIMIT ?",
+      [toDelete]
+    );
+    if (old.length === 0) return 0;
+    for (const row of old) {
+      await this.run('DELETE FROM shopping_list_items WHERE listId = ?', [row.id]);
+      await this.run('DELETE FROM shopping_lists WHERE id = ?', [row.id]);
+    }
+    return old.length;
+  }
 }

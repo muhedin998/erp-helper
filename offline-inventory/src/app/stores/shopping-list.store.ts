@@ -52,6 +52,7 @@ export const ShoppingListStore = signalStore(
 
     async loadHistory(): Promise<void> {
       patchState(store, { loading: true });
+      await db.enforceMaxLists(100);
       const history = await db.getShoppingListsByDate();
       patchState(store, { history, loading: false });
     },
