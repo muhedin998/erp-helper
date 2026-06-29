@@ -57,6 +57,18 @@
       <ion-button
         expand="block"
         fill="outline"
+        color="secondary"
+        (click)="discoverServer()"
+        [disabled]="discovering || syncing"
+        class="pill-button"
+      >
+        <ion-icon slot="start" name="radar-outline"></ion-icon>
+        {{ discovering ? 'Tražim server...' : 'Pronađi server' }}
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="outline"
         color="medium"
         (click)="testConnection()"
         [disabled]="!isValidIp || testingConnection || syncing"

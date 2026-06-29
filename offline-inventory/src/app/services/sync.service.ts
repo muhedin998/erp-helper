@@ -77,6 +77,46 @@ export class SyncService {
     }
   }
 
+  async discoverServer(): Promise<{ ip: string; port: number } | null> {
+    console.log('[sync] Discovering server on local network...');
+
+    // Build candidate IPs — try common shop network ranges
+    const candidates: string[] = [];
+    // Common gateway/device IPs
+    for (const subnet of [0, 1]) {
+      for (let i = 1; i <= 10; i++) {
+        candidates.push(`192.168.${subnet}.${i}`);
+      }
+      // Also try higher IPs where PCs often land
+      for (let i = 100; i <= 110; i++) {
+        candidates.push(`192.168.${subnet}.${i}`);
+      }
+    }
+
+    // Try each candidate in parallel with short timeout
+    const controller = new AbortController();
+    const found = await Promise.any(
+      candidates.map(async (ip) => {
+        const url = `http://${ip}:8765/api/discover`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(1500) });
+        if (!resp.ok) throw new Error('not ok');
+        const data = await resp.json();
+        if (data.name === 'latko-sync') {
+          controller.abort();
+          return { ip: data.ip, port: data.port };
+        }
+        throw new Error('not latko-sync');
+      }),
+    ).catch(() => null);
+
+    if (found) {
+      console.log(`[sync] Discovered server at ${found.ip}:${found.port}`);
+    } else {
+      console.log('[sync] No server found on local network');
+    }
+    return found;
+  }
+
   async syncProducts(
     url: string,
     onProgress?: (done: number, total: number, stage?: string) => void,
