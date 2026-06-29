@@ -12,7 +12,7 @@ if (!fs.existsSync(configPath)) {
   process.exit(1);
 }
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-const PORT = config.server?.port || 3500;
+const PORT = config.server?.port || 8765;
 const SOURCE = config.source || 'file';
 
 // ── Product cache (loaded once, refreshed on demand) ────────────────────

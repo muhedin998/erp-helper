@@ -8,7 +8,7 @@ npm install
 npm start
 ```
 
-Server runs on `http://0.0.0.0:3500` by default.
+Server runs on `http://0.0.0.0:8765` by default.
 
 ## Configuration
 

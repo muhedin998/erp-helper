@@ -1,6 +1,6 @@
 {
   "server": {
-    "port": 3500
+    "port": 8765
   },
 
   "_comment_source": "SOURCE: 'firebird' or 'file'",
