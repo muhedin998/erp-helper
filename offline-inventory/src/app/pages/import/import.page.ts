@@ -18,7 +18,6 @@ export class ImportPage {
   octet4 = '';
 
   testingConnection = false;
-  discovering = false;
   connectionStatus: { ok: boolean; productCount?: number; error?: string } | null = null;
   syncing = false;
   syncProgress = 0;
@@ -32,36 +31,7 @@ export class ImportPage {
     if (saved) {
       this.octet3 = saved[0];
       this.octet4 = saved[1];
-    } else {
-      // No saved IP — try auto-discovery
-      await this.discoverServer();
     }
-  }
-
-  async discoverServer() {
-    this.discovering = true;
-    this.connectionStatus = null;
-    try {
-      const found = await this.syncService.discoverServer();
-      if (found) {
-        // Parse IP into octets
-        const parts = found.ip.split('.');
-        if (parts.length === 4) {
-          this.octet3 = parts[2];
-          this.octet4 = parts[3];
-          await this.syncService.setLastIpOctets(this.octet3, this.octet4);
-          await this.syncService.setServerUrl(this.fullUrl);
-          this.connectionStatus = { ok: true, productCount: 0 };
-          // Auto-test to get product count
-          this.connectionStatus = await this.syncService.checkServer(this.fullUrl);
-        }
-      } else {
-        this.connectionStatus = { ok: false, error: 'Server nije pronađen na mreži' };
-      }
-    } catch {
-      this.connectionStatus = { ok: false, error: 'Greška pri traženju servera' };
-    }
-    this.discovering = false;
   }
 
   get fullUrl(): string {
