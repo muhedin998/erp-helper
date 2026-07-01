@@ -117,9 +117,28 @@
     </div>
   </div>
 
+  <!-- Sort selector -->
+  <div class="sort-bar" *ngIf="store.items().length > 1">
+    <span class="sort-label">Sortiraj:</span>
+    <ion-segment [value]="sortBy" (ionChange)="sortBy = $any($event).detail.value" mode="ios" class="sort-segment">
+      <ion-segment-button value="added">
+        <ion-label>Dodato</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="name">
+        <ion-label>Naziv</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="quantity">
+        <ion-label>Količina</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="price">
+        <ion-label>Cena</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
   <!-- Items list -->
   <div class="items-section">
-    <div class="item-card" *ngFor="let item of store.items()" tappable>
+    <div class="item-card" *ngFor="let item of sortedItems" tappable>
       <div class="item-qty-pill" (click)="store.isDraft() ? editItem(item) : null" [class.editable]="store.isDraft()">
         {{ item.quantity }}
       </div>

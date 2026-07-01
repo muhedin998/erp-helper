@@ -29,8 +29,23 @@ export class ShoppingListDetailPage implements OnInit {
   searchQuery = '';
   searchResults: Product[] = [];
   listId = '';
+  sortBy: 'added' | 'name' | 'quantity' | 'price' = 'added';
 
   private searchTimeout: any = null;
+
+  get sortedItems() {
+    const items = [...this.store.items()];
+    switch (this.sortBy) {
+      case 'name':
+        return items.sort((a, b) => a.naziv.localeCompare(b.naziv, 'sr'));
+      case 'quantity':
+        return items.sort((a, b) => b.quantity - a.quantity);
+      case 'price':
+        return items.sort((a, b) => (b.cena ?? 0) * b.quantity - (a.cena ?? 0) * a.quantity);
+      default: // 'added'
+        return items; // already sorted by id (insertion order)
+    }
+  }
 
   constructor(
     private alertCtrl: AlertController,

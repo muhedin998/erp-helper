@@ -129,6 +129,34 @@
   margin-top: 6px;
 }
 
+// Sort bar
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 8px;
+}
+
+.sort-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9CA3AF;
+  white-space: nowrap;
+}
+
+.sort-segment {
+  --background: #F3F4F6;
+  border-radius: 10px;
+  font-size: 0.7rem;
+}
+
+ion-segment-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-height: 28px;
+  font-size: 0.7rem;
+}
+
 // Items
 .items-section {
   padding: 2px 10px 100px;
