@@ -42,12 +42,12 @@ export class ShoppingListDetailPage implements OnInit {
         return items.sort((a, b) => b.quantity - a.quantity);
       case 'price':
         return items.sort((a, b) => (b.cena ?? 0) - (a.cena ?? 0));
-      default: // 'added'
+      default: // 'added' — newest first
         return items.sort((a, b) => {
           const ta = a.addedAt || '';
           const tb = b.addedAt || '';
-          if (ta !== tb) return ta.localeCompare(tb);
-          return (a.id || '').localeCompare(b.id || '');
+          if (ta !== tb) return tb.localeCompare(ta);
+          return (b.id || '').localeCompare(a.id || '');
         });
     }
   }
