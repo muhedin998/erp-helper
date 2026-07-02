@@ -10,7 +10,7 @@ export class DatabaseService {
   private dbName = 'offline_inventory';
   private initialized = false;
   private fts5Available = true;
-  private readonly DB_VERSION = 3;
+  private readonly DB_VERSION = 4;
 
   async init(): Promise<void> {
     if (this.initialized) return;
@@ -67,6 +67,24 @@ export class DatabaseService {
       } catch (e: any) {
         if (!e?.message?.includes('duplicate column')) {
           console.warn('[db] v3 migration skipped:', e?.message || e);
+        }
+      }
+    }
+    if (recorded < 4) {
+      try {
+        await CapacitorSQLite.execute({
+          database: this.dbName,
+          statements: `ALTER TABLE shopping_list_items ADD COLUMN addedAt TEXT DEFAULT '';`,
+        });
+        // Backfill existing items with their list's createdAt
+        await CapacitorSQLite.execute({
+          database: this.dbName,
+          statements: `UPDATE shopping_list_items SET addedAt = (SELECT createdAt FROM shopping_lists WHERE id = listId) WHERE addedAt = '';`,
+        });
+        console.log('[db] migrated shopping_list_items to v4 (added addedAt)');
+      } catch (e: any) {
+        if (!e?.message?.includes('duplicate column')) {
+          console.warn('[db] v4 migration skipped:', e?.message || e);
         }
       }
     }
@@ -135,6 +153,7 @@ export class DatabaseService {
           purchasedQuantity INTEGER NOT NULL DEFAULT 0,
           checked INTEGER NOT NULL DEFAULT 0,
           scannedCode TEXT DEFAULT '',
+          addedAt TEXT DEFAULT '',
           FOREIGN KEY (listId) REFERENCES shopping_lists(id) ON DELETE CASCADE,
           FOREIGN KEY (productId) REFERENCES products(id)
         );
@@ -542,7 +561,7 @@ export class DatabaseService {
     return this.query<any>(
       `SELECT sli.*, p.sifra, p.barcode, p.naziv, p.cena
        FROM shopping_list_items sli INNER JOIN products p ON sli.productId = p.id
-       WHERE sli.listId = ? ORDER BY sli.id ASC`,
+       WHERE sli.listId = ? ORDER BY sli.addedAt ASC, sli.id ASC`,
       [listId]
     );
   }
@@ -561,9 +580,10 @@ export class DatabaseService {
       return;
     }
     const id = uuidv4();
+    const now = new Date().toISOString();
     await this.run(
-      'INSERT INTO shopping_list_items (id, listId, productId, quantity, purchasedQuantity, checked, scannedCode) VALUES (?, ?, ?, ?, 0, 0, ?)',
-      [id, listId, productId, quantity, scannedCode]
+      'INSERT INTO shopping_list_items (id, listId, productId, quantity, purchasedQuantity, checked, scannedCode, addedAt) VALUES (?, ?, ?, ?, 0, 0, ?, ?)',
+      [id, listId, productId, quantity, scannedCode, now]
     );
   }
 
