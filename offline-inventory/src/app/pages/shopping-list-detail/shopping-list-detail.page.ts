@@ -41,7 +41,7 @@ export class ShoppingListDetailPage implements OnInit {
       case 'quantity':
         return items.sort((a, b) => b.quantity - a.quantity);
       case 'price':
-        return items.sort((a, b) => (b.cena ?? 0) * b.quantity - (a.cena ?? 0) * a.quantity);
+        return items.sort((a, b) => (b.cena ?? 0) - (a.cena ?? 0));
       default: // 'added'
         return items; // already sorted by id (insertion order)
     }
