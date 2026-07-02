@@ -43,7 +43,12 @@ export class ShoppingListDetailPage implements OnInit {
       case 'price':
         return items.sort((a, b) => (b.cena ?? 0) - (a.cena ?? 0));
       default: // 'added'
-        return items; // already sorted by id (insertion order)
+        return items.sort((a, b) => {
+          const ta = a.addedAt || '';
+          const tb = b.addedAt || '';
+          if (ta !== tb) return ta.localeCompare(tb);
+          return (a.id || '').localeCompare(b.id || '');
+        });
     }
   }
 
