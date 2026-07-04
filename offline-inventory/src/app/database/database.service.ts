@@ -289,20 +289,44 @@ export class DatabaseService {
 
   async run(statement: string, values: any[] = []): Promise<number> {
     await this.ensureInit();
-    const ret = await CapacitorSQLite.run({ database: this.dbName, statement, values });
-    await this.persist();
-    return ret.changes?.changes ?? 0;
+    try {
+      const ret = await CapacitorSQLite.run({ database: this.dbName, statement, values });
+      await this.persist();
+      return ret.changes?.changes ?? 0;
+    } catch (e: any) {
+      if (e?.message?.includes('null')) {
+        console.warn('[db] run got null, retrying after 500ms...');
+        await new Promise(r => setTimeout(r, 500));
+        const ret = await CapacitorSQLite.run({ database: this.dbName, statement, values });
+        await this.persist();
+        return ret.changes?.changes ?? 0;
+      }
+      throw e;
+    }
   }
 
   async query<T>(statement: string, values: any[] = []): Promise<T[]> {
     await this.ensureInit();
-    const ret: capSQLiteValues = await CapacitorSQLite.query({ database: this.dbName, statement, values });
-    let rows = ret.values ?? [];
-    // iOS native plugin returns column metadata as the first element
-    if (rows.length > 0 && (rows[0] as any)?.ios_columns) {
-      rows = rows.slice(1);
+    try {
+      const ret: capSQLiteValues = await CapacitorSQLite.query({ database: this.dbName, statement, values });
+      let rows = ret.values ?? [];
+      if (rows.length > 0 && (rows[0] as any)?.ios_columns) {
+        rows = rows.slice(1);
+      }
+      return rows as T[];
+    } catch (e: any) {
+      if (e?.message?.includes('null')) {
+        console.warn('[db] query got null, retrying after 500ms...');
+        await new Promise(r => setTimeout(r, 500));
+        const ret: capSQLiteValues = await CapacitorSQLite.query({ database: this.dbName, statement, values });
+        let rows = ret.values ?? [];
+        if (rows.length > 0 && (rows[0] as any)?.ios_columns) {
+          rows = rows.slice(1);
+        }
+        return rows as T[];
+      }
+      throw e;
     }
-    return rows as T[];
   }
 
   async executeSQL(sql: string): Promise<void> {
