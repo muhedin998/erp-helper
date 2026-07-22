@@ -287,4 +287,17 @@ ion-segment-button {
     background: #1F2937;
     color: #6B7280;
   }
+
+  .sort-label {
+    color: #9CA3AF;
+  }
+
+  .sort-segment {
+    --background: #374151;
+  }
+
+  ion-segment-button {
+    --color-checked: #E5E7EB;
+    --color: #9CA3AF;
+  }
 }
