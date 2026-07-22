@@ -19,7 +19,7 @@
     "target": "es2022",
     "module": "es2020",
     "lib": [
-      "es2021",
+      "es2018",
       "dom"
     ],
     "skipLibCheck": true,
